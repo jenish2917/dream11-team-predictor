@@ -1,0 +1,10 @@
+match_id,player_name,player_id,team,opposing_team,overs,maidens,runs,wickets,economy,dots,fours,sixes,fantasy_points,role,match_date,venue
+12345,Jasprit Bumrah,4,Mumbai Indians,Royal Challengers Bangalore,4.0,0,32,3,8.0,12,4,1,75,BWL,2024-05-10,Wankhede Stadium
+12345,Ravindra Jadeja,5,Chennai Super Kings,Mumbai Indians,4.0,0,28,2,7.0,14,3,0,50,AR,2024-05-10,Wankhede Stadium
+12345,Yuzvendra Chahal,6,Royal Challengers Bangalore,Chennai Super Kings,4.0,1,25,2,6.25,10,2,1,50,BWL,2024-05-10,Wankhede Stadium
+12346,Jasprit Bumrah,4,Mumbai Indians,Royal Challengers Bangalore,3.5,0,40,1,10.43,8,5,2,30,BWL,2024-05-15,M. Chinnaswamy Stadium
+12346,Ravindra Jadeja,5,Chennai Super Kings,Mumbai Indians,4.0,1,22,3,5.5,16,1,0,80,AR,2024-05-15,M. Chinnaswamy Stadium
+12346,Yuzvendra Chahal,6,Royal Challengers Bangalore,Chennai Super Kings,4.0,0,35,1,8.75,9,4,2,30,BWL,2024-05-15,M. Chinnaswamy Stadium
+12347,Jasprit Bumrah,4,Mumbai Indians,Royal Challengers Bangalore,4.0,0,30,2,7.5,10,3,1,55,BWL,2024-05-20,MA Chidambaram Stadium
+12347,Ravindra Jadeja,5,Chennai Super Kings,Mumbai Indians,4.0,0,25,3,6.25,12,2,0,70,AR,2024-05-20,MA Chidambaram Stadium
+12347,Yuzvendra Chahal,6,Royal Challengers Bangalore,Chennai Super Kings,3.2,0,38,0,11.88,6,4,2,10,BWL,2024-05-20,MA Chidambaram Stadium

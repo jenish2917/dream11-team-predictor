@@ -1,0 +1,232 @@
+match_id,player_name,player_id,team,opposing_team,overs,maidens,runs,wickets,economy,role,match_date,venue
+m1000,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,0,18,4,4.5,BWL,2023-01-01,Arun Jaitley Stadium
+m1000,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,1,20,0,5.0,AR,2023-01-01,Arun Jaitley Stadium
+m1000,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,14,0,3.5,AR,2023-01-01,Arun Jaitley Stadium
+m1001,Ravindra Jadeja,323,Chennai Super Kings,Sunrisers Hyderabad,4,0,33,2,8.25,AR,2023-01-02,Arun Jaitley Stadium
+m1001,Rashid Khan,680,Sunrisers Hyderabad,Chennai Super Kings,4,1,20,1,5.0,BWL,2023-01-02,Arun Jaitley Stadium
+m1001,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Chennai Super Kings,4,0,26,1,6.5,BWL,2023-01-02,Arun Jaitley Stadium
+m1002,Rashid Khan,680,Sunrisers Hyderabad,Chennai Super Kings,4,0,20,3,5.0,BWL,2023-01-03,Eden Gardens
+m1002,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Chennai Super Kings,4,0,18,0,4.5,BWL,2023-01-03,Eden Gardens
+m1002,Ravindra Jadeja,323,Chennai Super Kings,Sunrisers Hyderabad,4,0,20,1,5.0,AR,2023-01-03,Eden Gardens
+m1003,Pat Cummins,554,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,16,0,4.0,BWL,2023-01-04,MA Chidambaram Stadium
+m1003,Andre Russell,233,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,9,0,2.25,AR,2023-01-04,MA Chidambaram Stadium
+m1003,Yuzvendra Chahal,965,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,27,0,6.75,BWL,2023-01-04,MA Chidambaram Stadium
+m1003,Glenn Maxwell,209,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,18,1,4.5,AR,2023-01-04,MA Chidambaram Stadium
+m1004,Pat Cummins,554,Kolkata Knight Riders,Rajasthan Royals,4,0,25,1,6.25,BWL,2023-01-05,Eden Gardens
+m1004,Andre Russell,233,Kolkata Knight Riders,Rajasthan Royals,4,0,10,0,2.5,AR,2023-01-05,Eden Gardens
+m1005,Rashid Khan,680,Sunrisers Hyderabad,Delhi Capitals,4,0,10,2,2.5,BWL,2023-01-06,MA Chidambaram Stadium
+m1005,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Delhi Capitals,4,1,15,1,3.75,BWL,2023-01-06,MA Chidambaram Stadium
+m1006,Yuzvendra Chahal,965,Royal Challengers Bangalore,Rajasthan Royals,4,0,20,1,5.0,BWL,2023-01-07,Wankhede Stadium
+m1006,Glenn Maxwell,209,Royal Challengers Bangalore,Rajasthan Royals,4,0,13,0,3.25,AR,2023-01-07,Wankhede Stadium
+m1007,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,11,1,2.75,BWL,2023-01-08,Arun Jaitley Stadium
+m1008,Jasprit Bumrah,979,Mumbai Indians,Kolkata Knight Riders,4,0,19,2,4.75,BWL,2023-01-09,MA Chidambaram Stadium
+m1008,Hardik Pandya,652,Mumbai Indians,Kolkata Knight Riders,4,0,17,0,4.25,AR,2023-01-09,MA Chidambaram Stadium
+m1008,Pat Cummins,554,Kolkata Knight Riders,Mumbai Indians,4,1,20,0,5.0,BWL,2023-01-09,MA Chidambaram Stadium
+m1008,Andre Russell,233,Kolkata Knight Riders,Mumbai Indians,4,0,19,3,4.75,AR,2023-01-09,MA Chidambaram Stadium
+m1009,Rashid Khan,680,Sunrisers Hyderabad,Kolkata Knight Riders,4,0,27,2,6.75,BWL,2023-01-10,Wankhede Stadium
+m1009,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Kolkata Knight Riders,4,1,18,2,4.5,BWL,2023-01-10,Wankhede Stadium
+m1009,Pat Cummins,554,Kolkata Knight Riders,Sunrisers Hyderabad,4,0,15,3,3.75,BWL,2023-01-10,Wankhede Stadium
+m1009,Andre Russell,233,Kolkata Knight Riders,Sunrisers Hyderabad,4,0,17,0,4.25,AR,2023-01-10,Wankhede Stadium
+m1010,Pat Cummins,554,Kolkata Knight Riders,Delhi Capitals,4,0,15,2,3.75,BWL,2023-01-11,Punjab Cricket Association Stadium
+m1010,Andre Russell,233,Kolkata Knight Riders,Delhi Capitals,4,0,26,0,6.5,AR,2023-01-11,Punjab Cricket Association Stadium
+m1011,Kagiso Rabada,512,Punjab Kings,Chennai Super Kings,4,0,23,4,5.75,BWL,2023-01-12,MA Chidambaram Stadium
+m1011,Ravindra Jadeja,323,Chennai Super Kings,Punjab Kings,4,0,20,0,5.0,AR,2023-01-12,MA Chidambaram Stadium
+m1012,Kagiso Rabada,512,Punjab Kings,Sunrisers Hyderabad,4,0,21,2,5.25,BWL,2023-01-13,Wankhede Stadium
+m1012,Rashid Khan,680,Sunrisers Hyderabad,Punjab Kings,4,1,22,1,5.5,BWL,2023-01-13,Wankhede Stadium
+m1012,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Punjab Kings,4,0,16,1,4.0,BWL,2023-01-13,Wankhede Stadium
+m1013,Rashid Khan,680,Sunrisers Hyderabad,Rajasthan Royals,4,0,18,2,4.5,BWL,2023-01-14,Wankhede Stadium
+m1013,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Rajasthan Royals,4,0,21,1,5.25,BWL,2023-01-14,Wankhede Stadium
+m1014,Jasprit Bumrah,979,Mumbai Indians,Rajasthan Royals,4,0,23,2,5.75,BWL,2023-01-15,MA Chidambaram Stadium
+m1014,Hardik Pandya,652,Mumbai Indians,Rajasthan Royals,4,0,15,1,3.75,AR,2023-01-15,MA Chidambaram Stadium
+m1015,Yuzvendra Chahal,965,Royal Challengers Bangalore,Delhi Capitals,4,0,19,1,4.75,BWL,2023-01-16,MA Chidambaram Stadium
+m1015,Glenn Maxwell,209,Royal Challengers Bangalore,Delhi Capitals,4,0,14,0,3.5,AR,2023-01-16,MA Chidambaram Stadium
+m1016,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,17,2,4.25,BWL,2023-01-17,Punjab Cricket Association Stadium
+m1017,Rashid Khan,680,Sunrisers Hyderabad,Punjab Kings,4,0,13,0,3.25,BWL,2023-01-18,MA Chidambaram Stadium
+m1017,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Punjab Kings,4,0,16,2,4.0,BWL,2023-01-18,MA Chidambaram Stadium
+m1017,Kagiso Rabada,512,Punjab Kings,Sunrisers Hyderabad,4,0,26,1,6.5,BWL,2023-01-18,MA Chidambaram Stadium
+m1018,Jasprit Bumrah,979,Mumbai Indians,Delhi Capitals,4,0,21,2,5.25,BWL,2023-01-19,M. Chinnaswamy Stadium
+m1018,Hardik Pandya,652,Mumbai Indians,Delhi Capitals,4,0,21,1,5.25,AR,2023-01-19,M. Chinnaswamy Stadium
+m1019,Rashid Khan,680,Sunrisers Hyderabad,Rajasthan Royals,4,0,22,2,5.5,BWL,2023-01-20,Eden Gardens
+m1019,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Rajasthan Royals,4,1,23,1,5.75,BWL,2023-01-20,Eden Gardens
+m1020,Jasprit Bumrah,979,Mumbai Indians,Royal Challengers Bangalore,4,1,18,2,4.5,BWL,2023-01-21,Eden Gardens
+m1020,Hardik Pandya,652,Mumbai Indians,Royal Challengers Bangalore,4,0,17,0,4.25,AR,2023-01-21,Eden Gardens
+m1020,Yuzvendra Chahal,965,Royal Challengers Bangalore,Mumbai Indians,4,1,18,1,4.5,BWL,2023-01-21,Eden Gardens
+m1020,Glenn Maxwell,209,Royal Challengers Bangalore,Mumbai Indians,4,0,30,2,7.5,AR,2023-01-21,Eden Gardens
+m1021,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,1,18,3,4.5,BWL,2023-01-22,MA Chidambaram Stadium
+m1022,Rashid Khan,680,Sunrisers Hyderabad,Punjab Kings,4,0,23,2,5.75,BWL,2023-01-23,MA Chidambaram Stadium
+m1022,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Punjab Kings,4,0,22,1,5.5,BWL,2023-01-23,MA Chidambaram Stadium
+m1022,Kagiso Rabada,512,Punjab Kings,Sunrisers Hyderabad,4,1,26,1,6.5,BWL,2023-01-23,MA Chidambaram Stadium
+m1023,Jasprit Bumrah,979,Mumbai Indians,Sunrisers Hyderabad,4,0,15,2,3.75,BWL,2023-01-24,Wankhede Stadium
+m1023,Hardik Pandya,652,Mumbai Indians,Sunrisers Hyderabad,4,0,21,2,5.25,AR,2023-01-24,Wankhede Stadium
+m1023,Rashid Khan,680,Sunrisers Hyderabad,Mumbai Indians,4,0,24,3,6.0,BWL,2023-01-24,Wankhede Stadium
+m1023,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Mumbai Indians,4,0,19,0,4.75,BWL,2023-01-24,Wankhede Stadium
+m1024,Jasprit Bumrah,979,Mumbai Indians,Rajasthan Royals,4,1,17,2,4.25,BWL,2023-01-25,Wankhede Stadium
+m1024,Hardik Pandya,652,Mumbai Indians,Rajasthan Royals,4,0,28,0,7.0,AR,2023-01-25,Wankhede Stadium
+m1025,Yuzvendra Chahal,965,Royal Challengers Bangalore,Delhi Capitals,4,0,16,2,4.0,BWL,2023-01-26,Punjab Cricket Association Stadium
+m1025,Glenn Maxwell,209,Royal Challengers Bangalore,Delhi Capitals,4,0,16,0,4.0,AR,2023-01-26,Punjab Cricket Association Stadium
+m1026,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,20,2,5.0,BWL,2023-01-27,MA Chidambaram Stadium
+m1026,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,1,18,2,4.5,BWL,2023-01-27,MA Chidambaram Stadium
+m1026,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,15,0,3.75,AR,2023-01-27,MA Chidambaram Stadium
+m1027,Rashid Khan,680,Sunrisers Hyderabad,Rajasthan Royals,4,1,19,2,4.75,BWL,2023-01-28,Punjab Cricket Association Stadium
+m1027,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Rajasthan Royals,4,0,25,2,6.25,BWL,2023-01-28,Punjab Cricket Association Stadium
+m1028,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,15,0,3.75,AR,2023-01-29,MA Chidambaram Stadium
+m1029,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,18,2,4.5,AR,2023-01-30,Arun Jaitley Stadium
+m1030,Jasprit Bumrah,979,Mumbai Indians,Kolkata Knight Riders,4,0,33,3,8.25,BWL,2023-01-31,Arun Jaitley Stadium
+m1030,Hardik Pandya,652,Mumbai Indians,Kolkata Knight Riders,4,0,18,1,4.5,AR,2023-01-31,Arun Jaitley Stadium
+m1030,Pat Cummins,554,Kolkata Knight Riders,Mumbai Indians,4,0,19,2,4.75,BWL,2023-01-31,Arun Jaitley Stadium
+m1030,Andre Russell,233,Kolkata Knight Riders,Mumbai Indians,4,0,23,0,5.75,AR,2023-01-31,Arun Jaitley Stadium
+m1031,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,25,0,6.25,AR,2023-02-01,Punjab Cricket Association Stadium
+m1032,Rashid Khan,680,Sunrisers Hyderabad,Rajasthan Royals,4,0,13,2,3.25,BWL,2023-02-02,M. Chinnaswamy Stadium
+m1032,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Rajasthan Royals,4,1,29,0,7.25,BWL,2023-02-02,M. Chinnaswamy Stadium
+m1033,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,1,15,3,3.75,BWL,2023-02-03,M. Chinnaswamy Stadium
+m1033,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,0,21,2,5.25,AR,2023-02-03,M. Chinnaswamy Stadium
+m1033,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,19,2,4.75,AR,2023-02-03,M. Chinnaswamy Stadium
+m1034,Pat Cummins,554,Kolkata Knight Riders,Rajasthan Royals,4,0,16,2,4.0,BWL,2023-02-04,Arun Jaitley Stadium
+m1034,Andre Russell,233,Kolkata Knight Riders,Rajasthan Royals,4,0,17,1,4.25,AR,2023-02-04,Arun Jaitley Stadium
+m1035,Pat Cummins,554,Kolkata Knight Riders,Rajasthan Royals,4,0,14,1,3.5,BWL,2023-02-05,Wankhede Stadium
+m1035,Andre Russell,233,Kolkata Knight Riders,Rajasthan Royals,4,0,27,1,6.75,AR,2023-02-05,Wankhede Stadium
+m1036,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,21,1,5.25,BWL,2023-02-06,Punjab Cricket Association Stadium
+m1037,Ravindra Jadeja,323,Chennai Super Kings,Royal Challengers Bangalore,4,0,20,0,5.0,AR,2023-02-07,Wankhede Stadium
+m1037,Yuzvendra Chahal,965,Royal Challengers Bangalore,Chennai Super Kings,4,1,21,3,5.25,BWL,2023-02-07,Wankhede Stadium
+m1037,Glenn Maxwell,209,Royal Challengers Bangalore,Chennai Super Kings,4,0,12,0,3.0,AR,2023-02-07,Wankhede Stadium
+m1038,Yuzvendra Chahal,965,Royal Challengers Bangalore,Rajasthan Royals,4,0,18,1,4.5,BWL,2023-02-08,Eden Gardens
+m1038,Glenn Maxwell,209,Royal Challengers Bangalore,Rajasthan Royals,4,0,18,1,4.5,AR,2023-02-08,Eden Gardens
+m1039,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,24,2,6.0,BWL,2023-02-09,MA Chidambaram Stadium
+m1040,Kagiso Rabada,512,Punjab Kings,Royal Challengers Bangalore,4,0,18,0,4.5,BWL,2023-02-10,Punjab Cricket Association Stadium
+m1040,Yuzvendra Chahal,965,Royal Challengers Bangalore,Punjab Kings,4,1,16,1,4.0,BWL,2023-02-10,Punjab Cricket Association Stadium
+m1040,Glenn Maxwell,209,Royal Challengers Bangalore,Punjab Kings,4,0,8,0,2.0,AR,2023-02-10,Punjab Cricket Association Stadium
+m1041,Rashid Khan,680,Sunrisers Hyderabad,Rajasthan Royals,4,0,19,1,4.75,BWL,2023-02-11,Punjab Cricket Association Stadium
+m1041,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Rajasthan Royals,4,0,15,2,3.75,BWL,2023-02-11,Punjab Cricket Association Stadium
+m1042,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,19,2,4.75,BWL,2023-02-12,Wankhede Stadium
+m1042,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,0,23,2,5.75,BWL,2023-02-12,Wankhede Stadium
+m1042,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,16,0,4.0,AR,2023-02-12,Wankhede Stadium
+m1043,Yuzvendra Chahal,965,Royal Challengers Bangalore,Mumbai Indians,4,0,17,1,4.25,BWL,2023-02-13,Eden Gardens
+m1043,Glenn Maxwell,209,Royal Challengers Bangalore,Mumbai Indians,4,0,21,0,5.25,AR,2023-02-13,Eden Gardens
+m1043,Jasprit Bumrah,979,Mumbai Indians,Royal Challengers Bangalore,4,0,15,1,3.75,BWL,2023-02-13,Eden Gardens
+m1043,Hardik Pandya,652,Mumbai Indians,Royal Challengers Bangalore,4,0,17,2,4.25,AR,2023-02-13,Eden Gardens
+m1044,Yuzvendra Chahal,965,Royal Challengers Bangalore,Rajasthan Royals,4,0,11,1,2.75,BWL,2023-02-14,M. Chinnaswamy Stadium
+m1044,Glenn Maxwell,209,Royal Challengers Bangalore,Rajasthan Royals,4,0,18,0,4.5,AR,2023-02-14,M. Chinnaswamy Stadium
+m1045,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,23,1,5.75,AR,2023-02-15,Punjab Cricket Association Stadium
+m1046,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,0,18,1,4.5,BWL,2023-02-16,Eden Gardens
+m1046,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,0,16,1,4.0,AR,2023-02-16,Eden Gardens
+m1046,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,26,1,6.5,AR,2023-02-16,Eden Gardens
+m1047,Yuzvendra Chahal,965,Royal Challengers Bangalore,Rajasthan Royals,4,0,20,2,5.0,BWL,2023-02-17,M. Chinnaswamy Stadium
+m1047,Glenn Maxwell,209,Royal Challengers Bangalore,Rajasthan Royals,4,0,19,1,4.75,AR,2023-02-17,M. Chinnaswamy Stadium
+m1048,Rashid Khan,680,Sunrisers Hyderabad,Delhi Capitals,4,0,19,1,4.75,BWL,2023-02-18,Arun Jaitley Stadium
+m1048,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Delhi Capitals,4,0,21,3,5.25,BWL,2023-02-18,Arun Jaitley Stadium
+m1049,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,11,2,2.75,BWL,2023-02-19,Eden Gardens
+m1050,Pat Cummins,554,Kolkata Knight Riders,Delhi Capitals,4,0,12,1,3.0,BWL,2023-02-20,Wankhede Stadium
+m1050,Andre Russell,233,Kolkata Knight Riders,Delhi Capitals,4,0,19,0,4.75,AR,2023-02-20,Wankhede Stadium
+m1051,Jasprit Bumrah,979,Mumbai Indians,Kolkata Knight Riders,4,1,16,1,4.0,BWL,2023-02-21,Wankhede Stadium
+m1051,Hardik Pandya,652,Mumbai Indians,Kolkata Knight Riders,4,1,16,2,4.0,AR,2023-02-21,Wankhede Stadium
+m1051,Pat Cummins,554,Kolkata Knight Riders,Mumbai Indians,4,0,19,2,4.75,BWL,2023-02-21,Wankhede Stadium
+m1051,Andre Russell,233,Kolkata Knight Riders,Mumbai Indians,4,0,23,1,5.75,AR,2023-02-21,Wankhede Stadium
+m1053,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,0,17,2,4.25,BWL,2023-02-23,Eden Gardens
+m1054,Pat Cummins,554,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,15,2,3.75,BWL,2023-02-24,Wankhede Stadium
+m1054,Andre Russell,233,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,13,0,3.25,AR,2023-02-24,Wankhede Stadium
+m1054,Yuzvendra Chahal,965,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,18,2,4.5,BWL,2023-02-24,Wankhede Stadium
+m1054,Glenn Maxwell,209,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,19,0,4.75,AR,2023-02-24,Wankhede Stadium
+m1055,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,23,0,5.75,AR,2023-02-25,Punjab Cricket Association Stadium
+m1055,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,0,18,3,4.5,BWL,2023-02-25,Punjab Cricket Association Stadium
+m1055,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,1,23,0,5.75,AR,2023-02-25,Punjab Cricket Association Stadium
+m1056,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,0,15,0,3.75,BWL,2023-02-26,MA Chidambaram Stadium
+m1057,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,26,2,6.5,BWL,2023-02-27,Arun Jaitley Stadium
+m1058,Ravindra Jadeja,323,Chennai Super Kings,Royal Challengers Bangalore,4,0,14,1,3.5,AR,2023-02-28,M. Chinnaswamy Stadium
+m1058,Yuzvendra Chahal,965,Royal Challengers Bangalore,Chennai Super Kings,4,1,27,2,6.75,BWL,2023-02-28,M. Chinnaswamy Stadium
+m1058,Glenn Maxwell,209,Royal Challengers Bangalore,Chennai Super Kings,4,0,22,1,5.5,AR,2023-02-28,M. Chinnaswamy Stadium
+m1059,Yuzvendra Chahal,965,Royal Challengers Bangalore,Rajasthan Royals,4,0,15,2,3.75,BWL,2023-03-01,Wankhede Stadium
+m1059,Glenn Maxwell,209,Royal Challengers Bangalore,Rajasthan Royals,4,1,18,0,4.5,AR,2023-03-01,Wankhede Stadium
+m1060,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,18,0,4.5,AR,2023-03-02,Wankhede Stadium
+m1061,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,0,17,1,4.25,BWL,2023-03-03,Wankhede Stadium
+m1061,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,0,25,0,6.25,AR,2023-03-03,Wankhede Stadium
+m1061,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,1,20,0,5.0,AR,2023-03-03,Wankhede Stadium
+m1062,Kagiso Rabada,512,Punjab Kings,Kolkata Knight Riders,4,0,28,1,7.0,BWL,2023-03-04,M. Chinnaswamy Stadium
+m1062,Pat Cummins,554,Kolkata Knight Riders,Punjab Kings,4,0,13,2,3.25,BWL,2023-03-04,M. Chinnaswamy Stadium
+m1062,Andre Russell,233,Kolkata Knight Riders,Punjab Kings,4,0,16,0,4.0,AR,2023-03-04,M. Chinnaswamy Stadium
+m1063,Ravindra Jadeja,323,Chennai Super Kings,Royal Challengers Bangalore,4,1,19,1,4.75,AR,2023-03-05,MA Chidambaram Stadium
+m1063,Yuzvendra Chahal,965,Royal Challengers Bangalore,Chennai Super Kings,4,0,19,1,4.75,BWL,2023-03-05,MA Chidambaram Stadium
+m1063,Glenn Maxwell,209,Royal Challengers Bangalore,Chennai Super Kings,4,1,16,2,4.0,AR,2023-03-05,MA Chidambaram Stadium
+m1064,Rashid Khan,680,Sunrisers Hyderabad,Chennai Super Kings,4,0,20,0,5.0,BWL,2023-03-06,Wankhede Stadium
+m1064,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Chennai Super Kings,4,0,16,2,4.0,BWL,2023-03-06,Wankhede Stadium
+m1064,Ravindra Jadeja,323,Chennai Super Kings,Sunrisers Hyderabad,4,0,20,1,5.0,AR,2023-03-06,Wankhede Stadium
+m1065,Rashid Khan,680,Sunrisers Hyderabad,Delhi Capitals,4,0,11,2,2.75,BWL,2023-03-07,Punjab Cricket Association Stadium
+m1065,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Delhi Capitals,4,0,19,2,4.75,BWL,2023-03-07,Punjab Cricket Association Stadium
+m1066,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,21,0,5.25,BWL,2023-03-08,MA Chidambaram Stadium
+m1067,Kagiso Rabada,512,Punjab Kings,Chennai Super Kings,4,0,24,1,6.0,BWL,2023-03-09,Punjab Cricket Association Stadium
+m1067,Ravindra Jadeja,323,Chennai Super Kings,Punjab Kings,4,0,14,0,3.5,AR,2023-03-09,Punjab Cricket Association Stadium
+m1068,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,0,14,1,3.5,BWL,2023-03-10,Punjab Cricket Association Stadium
+m1068,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,0,25,0,6.25,AR,2023-03-10,Punjab Cricket Association Stadium
+m1068,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,18,1,4.5,AR,2023-03-10,Punjab Cricket Association Stadium
+m1070,Yuzvendra Chahal,965,Royal Challengers Bangalore,Delhi Capitals,4,1,19,1,4.75,BWL,2023-03-12,Punjab Cricket Association Stadium
+m1070,Glenn Maxwell,209,Royal Challengers Bangalore,Delhi Capitals,4,1,20,0,5.0,AR,2023-03-12,Punjab Cricket Association Stadium
+m1071,Ravindra Jadeja,323,Chennai Super Kings,Rajasthan Royals,4,0,26,0,6.5,AR,2023-03-13,M. Chinnaswamy Stadium
+m1072,Pat Cummins,554,Kolkata Knight Riders,Rajasthan Royals,4,0,20,2,5.0,BWL,2023-03-14,Wankhede Stadium
+m1072,Andre Russell,233,Kolkata Knight Riders,Rajasthan Royals,4,0,22,1,5.5,AR,2023-03-14,Wankhede Stadium
+m1073,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,28,1,7.0,BWL,2023-03-15,Eden Gardens
+m1073,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,0,15,0,3.75,BWL,2023-03-15,Eden Gardens
+m1073,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,15,0,3.75,AR,2023-03-15,Eden Gardens
+m1074,Kagiso Rabada,512,Punjab Kings,Sunrisers Hyderabad,4,0,21,0,5.25,BWL,2023-03-16,Punjab Cricket Association Stadium
+m1074,Rashid Khan,680,Sunrisers Hyderabad,Punjab Kings,4,1,22,2,5.5,BWL,2023-03-16,Punjab Cricket Association Stadium
+m1074,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Punjab Kings,4,0,12,1,3.0,BWL,2023-03-16,Punjab Cricket Association Stadium
+m1075,Kagiso Rabada,512,Punjab Kings,Kolkata Knight Riders,4,1,19,3,4.75,BWL,2023-03-17,Eden Gardens
+m1075,Pat Cummins,554,Kolkata Knight Riders,Punjab Kings,4,0,11,2,2.75,BWL,2023-03-17,Eden Gardens
+m1075,Andre Russell,233,Kolkata Knight Riders,Punjab Kings,4,1,21,0,5.25,AR,2023-03-17,Eden Gardens
+m1076,Pat Cummins,554,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,24,4,6.0,BWL,2023-03-18,Arun Jaitley Stadium
+m1076,Andre Russell,233,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,19,0,4.75,AR,2023-03-18,Arun Jaitley Stadium
+m1076,Yuzvendra Chahal,965,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,21,1,5.25,BWL,2023-03-18,Arun Jaitley Stadium
+m1076,Glenn Maxwell,209,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,22,2,5.5,AR,2023-03-18,Arun Jaitley Stadium
+m1077,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,0,16,0,4.0,BWL,2023-03-19,Punjab Cricket Association Stadium
+m1078,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,21,2,5.25,BWL,2023-03-20,Wankhede Stadium
+m1078,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,1,18,2,4.5,BWL,2023-03-20,Wankhede Stadium
+m1078,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,21,0,5.25,AR,2023-03-20,Wankhede Stadium
+m1079,Ravindra Jadeja,323,Chennai Super Kings,Delhi Capitals,4,0,22,0,5.5,AR,2023-03-21,Wankhede Stadium
+m1080,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,13,2,3.25,BWL,2023-03-22,Arun Jaitley Stadium
+m1080,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,1,6,1,1.5,BWL,2023-03-22,Arun Jaitley Stadium
+m1080,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,22,2,5.5,AR,2023-03-22,Arun Jaitley Stadium
+m1082,Rashid Khan,680,Sunrisers Hyderabad,Punjab Kings,4,0,18,2,4.5,BWL,2023-03-24,Arun Jaitley Stadium
+m1082,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Punjab Kings,4,0,28,1,7.0,BWL,2023-03-24,Arun Jaitley Stadium
+m1082,Kagiso Rabada,512,Punjab Kings,Sunrisers Hyderabad,4,0,15,3,3.75,BWL,2023-03-24,Arun Jaitley Stadium
+m1083,Pat Cummins,554,Kolkata Knight Riders,Rajasthan Royals,4,0,19,2,4.75,BWL,2023-03-25,MA Chidambaram Stadium
+m1083,Andre Russell,233,Kolkata Knight Riders,Rajasthan Royals,4,0,17,0,4.25,AR,2023-03-25,MA Chidambaram Stadium
+m1084,Jasprit Bumrah,979,Mumbai Indians,Rajasthan Royals,4,0,24,1,6.0,BWL,2023-03-26,Wankhede Stadium
+m1084,Hardik Pandya,652,Mumbai Indians,Rajasthan Royals,4,0,18,0,4.5,AR,2023-03-26,Wankhede Stadium
+m1085,Ravindra Jadeja,323,Chennai Super Kings,Rajasthan Royals,4,0,13,1,3.25,AR,2023-03-27,Eden Gardens
+m1086,Yuzvendra Chahal,965,Royal Challengers Bangalore,Chennai Super Kings,4,0,26,2,6.5,BWL,2023-03-28,M. Chinnaswamy Stadium
+m1086,Glenn Maxwell,209,Royal Challengers Bangalore,Chennai Super Kings,4,0,20,0,5.0,AR,2023-03-28,M. Chinnaswamy Stadium
+m1086,Ravindra Jadeja,323,Chennai Super Kings,Royal Challengers Bangalore,4,0,20,2,5.0,AR,2023-03-28,M. Chinnaswamy Stadium
+m1087,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,0,21,3,5.25,BWL,2023-03-29,M. Chinnaswamy Stadium
+m1088,Yuzvendra Chahal,965,Royal Challengers Bangalore,Mumbai Indians,4,0,19,1,4.75,BWL,2023-03-30,M. Chinnaswamy Stadium
+m1088,Glenn Maxwell,209,Royal Challengers Bangalore,Mumbai Indians,4,0,26,2,6.5,AR,2023-03-30,M. Chinnaswamy Stadium
+m1088,Jasprit Bumrah,979,Mumbai Indians,Royal Challengers Bangalore,4,1,23,2,5.75,BWL,2023-03-30,M. Chinnaswamy Stadium
+m1088,Hardik Pandya,652,Mumbai Indians,Royal Challengers Bangalore,4,0,16,2,4.0,AR,2023-03-30,M. Chinnaswamy Stadium
+m1089,Ravindra Jadeja,323,Chennai Super Kings,Mumbai Indians,4,0,19,0,4.75,AR,2023-03-31,Wankhede Stadium
+m1089,Jasprit Bumrah,979,Mumbai Indians,Chennai Super Kings,4,1,23,2,5.75,BWL,2023-03-31,Wankhede Stadium
+m1089,Hardik Pandya,652,Mumbai Indians,Chennai Super Kings,4,1,13,1,3.25,AR,2023-03-31,Wankhede Stadium
+m1090,Pat Cummins,554,Kolkata Knight Riders,Punjab Kings,4,0,17,1,4.25,BWL,2023-04-01,Arun Jaitley Stadium
+m1090,Andre Russell,233,Kolkata Knight Riders,Punjab Kings,4,0,23,0,5.75,AR,2023-04-01,Arun Jaitley Stadium
+m1090,Kagiso Rabada,512,Punjab Kings,Kolkata Knight Riders,4,0,23,2,5.75,BWL,2023-04-01,Arun Jaitley Stadium
+m1091,Kagiso Rabada,512,Punjab Kings,Rajasthan Royals,4,0,24,0,6.0,BWL,2023-04-02,Eden Gardens
+m1092,Jasprit Bumrah,979,Mumbai Indians,Punjab Kings,4,0,25,3,6.25,BWL,2023-04-03,M. Chinnaswamy Stadium
+m1092,Hardik Pandya,652,Mumbai Indians,Punjab Kings,4,0,21,0,5.25,AR,2023-04-03,M. Chinnaswamy Stadium
+m1092,Kagiso Rabada,512,Punjab Kings,Mumbai Indians,4,0,23,2,5.75,BWL,2023-04-03,M. Chinnaswamy Stadium
+m1093,Rashid Khan,680,Sunrisers Hyderabad,Mumbai Indians,4,0,10,2,2.5,BWL,2023-04-04,MA Chidambaram Stadium
+m1093,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Mumbai Indians,4,0,14,2,3.5,BWL,2023-04-04,MA Chidambaram Stadium
+m1093,Jasprit Bumrah,979,Mumbai Indians,Sunrisers Hyderabad,4,0,25,1,6.25,BWL,2023-04-04,MA Chidambaram Stadium
+m1093,Hardik Pandya,652,Mumbai Indians,Sunrisers Hyderabad,4,0,21,0,5.25,AR,2023-04-04,MA Chidambaram Stadium
+m1094,Pat Cummins,554,Kolkata Knight Riders,Delhi Capitals,4,0,20,1,5.0,BWL,2023-04-05,Wankhede Stadium
+m1094,Andre Russell,233,Kolkata Knight Riders,Delhi Capitals,4,0,18,1,4.5,AR,2023-04-05,Wankhede Stadium
+m1095,Pat Cummins,554,Kolkata Knight Riders,Chennai Super Kings,4,0,24,2,6.0,BWL,2023-04-06,MA Chidambaram Stadium
+m1095,Andre Russell,233,Kolkata Knight Riders,Chennai Super Kings,4,0,12,0,3.0,AR,2023-04-06,MA Chidambaram Stadium
+m1095,Ravindra Jadeja,323,Chennai Super Kings,Kolkata Knight Riders,4,0,14,0,3.5,AR,2023-04-06,MA Chidambaram Stadium
+m1096,Rashid Khan,680,Sunrisers Hyderabad,Chennai Super Kings,4,0,17,2,4.25,BWL,2023-04-07,Eden Gardens
+m1096,Bhuvneshwar Kumar,506,Sunrisers Hyderabad,Chennai Super Kings,4,1,25,3,6.25,BWL,2023-04-07,Eden Gardens
+m1096,Ravindra Jadeja,323,Chennai Super Kings,Sunrisers Hyderabad,4,0,20,1,5.0,AR,2023-04-07,Eden Gardens
+m1097,Jasprit Bumrah,979,Mumbai Indians,Royal Challengers Bangalore,4,0,17,2,4.25,BWL,2023-04-08,Wankhede Stadium
+m1097,Hardik Pandya,652,Mumbai Indians,Royal Challengers Bangalore,4,0,15,3,3.75,AR,2023-04-08,Wankhede Stadium
+m1097,Yuzvendra Chahal,965,Royal Challengers Bangalore,Mumbai Indians,4,0,21,0,5.25,BWL,2023-04-08,Wankhede Stadium
+m1097,Glenn Maxwell,209,Royal Challengers Bangalore,Mumbai Indians,4,0,13,0,3.25,AR,2023-04-08,Wankhede Stadium
+m1098,Kagiso Rabada,512,Punjab Kings,Delhi Capitals,4,0,31,1,7.75,BWL,2023-04-09,Punjab Cricket Association Stadium
+m1099,Yuzvendra Chahal,965,Royal Challengers Bangalore,Kolkata Knight Riders,4,1,24,2,6.0,BWL,2023-04-10,Wankhede Stadium
+m1099,Glenn Maxwell,209,Royal Challengers Bangalore,Kolkata Knight Riders,4,0,22,1,5.5,AR,2023-04-10,Wankhede Stadium
+m1099,Pat Cummins,554,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,15,0,3.75,BWL,2023-04-10,Wankhede Stadium
+m1099,Andre Russell,233,Kolkata Knight Riders,Royal Challengers Bangalore,4,0,25,2,6.25,AR,2023-04-10,Wankhede Stadium

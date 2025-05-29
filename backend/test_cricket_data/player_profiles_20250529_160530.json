@@ -1,0 +1,146 @@
+[
+  {
+    "name": "Rohit Sharma",
+    "role": "BAT",
+    "team": "Mumbai Indians",
+    "average_runs_last_5": 46.67,
+    "average_wickets_last_5": 0,
+    "batting_consistency_index": 25.14,
+    "bowling_consistency_index": 0,
+    "performance_vs_opposition": {
+      "Chennai Super Kings": {
+        "matches": 3,
+        "avg_runs": 46.67
+      }
+    },
+    "venue_stats": {
+      "M. Chinnaswamy Stadium": {
+        "matches": 1,
+        "avg_runs": 45.0
+      },
+      "MA Chidambaram Stadium": {
+        "matches": 1,
+        "avg_runs": 30.0
+      },
+      "Wankhede Stadium": {
+        "matches": 1,
+        "avg_runs": 65.0
+      }
+    },
+    "avg_fantasy_points": 65.0
+  },
+  {
+    "name": "MS Dhoni",
+    "role": "WK",
+    "team": "Chennai Super Kings",
+    "average_runs_last_5": 45.67,
+    "average_wickets_last_5": 0,
+    "batting_consistency_index": 32.86,
+    "bowling_consistency_index": 0,
+    "performance_vs_opposition": {
+      "Royal Challengers Bangalore": {
+        "matches": 3,
+        "avg_runs": 45.67
+      }
+    },
+    "venue_stats": {
+      "M. Chinnaswamy Stadium": {
+        "matches": 1,
+        "avg_runs": 35.0
+      },
+      "MA Chidambaram Stadium": {
+        "matches": 1,
+        "avg_runs": 60.0
+      },
+      "Wankhede Stadium": {
+        "matches": 1,
+        "avg_runs": 42.0
+      }
+    },
+    "avg_fantasy_points": 66.67
+  },
+  {
+    "name": "Virat Kohli",
+    "role": "BAT",
+    "team": "Royal Challengers Bangalore",
+    "average_runs_last_5": 71.67,
+    "average_wickets_last_5": 0,
+    "batting_consistency_index": 44.03,
+    "bowling_consistency_index": 0,
+    "performance_vs_opposition": {
+      "Chennai Super Kings": {
+        "matches": 3,
+        "avg_runs": 71.67
+      }
+    },
+    "venue_stats": {
+      "M. Chinnaswamy Stadium": {
+        "matches": 1,
+        "avg_runs": 85.0
+      },
+      "MA Chidambaram Stadium": {
+        "matches": 1,
+        "avg_runs": 55.0
+      },
+      "Wankhede Stadium": {
+        "matches": 1,
+        "avg_runs": 75.0
+      }
+    },
+    "avg_fantasy_points": 93.33
+  },
+  {
+    "name": "Yuzvendra Chahal",
+    "role": "Unknown",
+    "team": "Unknown",
+    "average_runs_last_5": 0,
+    "average_wickets_last_5": 1.0,
+    "batting_consistency_index": 0,
+    "bowling_consistency_index": 5.0,
+    "performance_vs_opposition": {},
+    "venue_stats": {},
+    "avg_fantasy_points": 30.0
+  },
+  {
+    "name": "Ravindra Jadeja",
+    "role": "Unknown",
+    "team": "Unknown",
+    "average_runs_last_5": 0,
+    "average_wickets_last_5": 2.67,
+    "batting_consistency_index": 0,
+    "bowling_consistency_index": 16.91,
+    "performance_vs_opposition": {},
+    "venue_stats": {},
+    "avg_fantasy_points": 66.67
+  },
+  {
+    "name": "Jasprit Bumrah",
+    "role": "BWL",
+    "team": "Mumbai Indians",
+    "average_runs_last_5": 2.33,
+    "average_wickets_last_5": 2.0,
+    "batting_consistency_index": 6.64,
+    "bowling_consistency_index": 10.0,
+    "performance_vs_opposition": {
+      "Royal Challengers Bangalore": {
+        "matches": 3,
+        "avg_runs": 2.33
+      }
+    },
+    "venue_stats": {
+      "M. Chinnaswamy Stadium": {
+        "matches": 1,
+        "avg_runs": 0.0
+      },
+      "MA Chidambaram Stadium": {
+        "matches": 1,
+        "avg_runs": 5.0
+      },
+      "Wankhede Stadium": {
+        "matches": 1,
+        "avg_runs": 2.0
+      }
+    },
+    "avg_fantasy_points": 63.33
+  }
+]
