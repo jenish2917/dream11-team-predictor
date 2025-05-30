@@ -7,15 +7,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#10B981", // Green color for accent (can be adjusted)
-        dark: {
-          background: "#121212",
-          text: "#FFFFFF",
-        },
-        light: {
-          background: "#FFFFFF",
-          text: "#121212",
-        }
+        primary: "#10B981", // Green color for accent
+        'dark-background': "#121212",
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      boxShadow: {
+        'nav-item': '0 2px 5px 0 rgba(0,0,0,0.05)',
       },
     },
   },

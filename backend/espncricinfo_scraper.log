@@ -2,3 +2,67 @@
 2025-05-29 16:09:41,185 - INFO - D:\dream11-team-predictor\backend\predictor\models.py changed, reloading.
 2025-05-29 16:19:25,167 - INFO - D:\dream11-team-predictor\backend\predictor\urls.py changed, reloading.
 2025-05-29 16:20:16,511 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 09:37:27,494 - WARNING - Not Found: /
+2025-05-30 09:37:27,636 - WARNING - Not Found: /favicon.ico
+2025-05-30 09:40:31,633 - WARNING - Not Found: /
+2025-05-30 09:40:47,031 - WARNING - Not Found: /api/v1/employees/
+2025-05-30 09:40:55,284 - WARNING - Unauthorized: /api/
+2025-05-30 09:41:01,723 - WARNING - Not Found: /
+2025-05-30 10:04:52,241 - WARNING - Unauthorized: /api/
+2025-05-30 10:04:55,298 - WARNING - Unauthorized: /api/
+2025-05-30 10:04:56,418 - WARNING - Unauthorized: /api/
+2025-05-30 10:07:17,951 - WARNING - Unauthorized: /api/
+2025-05-30 10:07:48,729 - WARNING - Unauthorized: /api/
+2025-05-30 10:07:48,953 - WARNING - Not Found: /favicon.ico
+2025-05-30 10:45:57,290 - WARNING - Unauthorized: /api/predictions/
+2025-05-30 10:45:57,298 - WARNING - Unauthorized: /api/predictions/
+2025-05-30 10:45:57,445 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 11:13:02,683 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:13:02,844 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:13:03,004 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:13:03,134 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:13:03,482 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:13:03,687 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:15:58,370 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:15:58,383 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:15:58,435 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:15:58,584 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:15:59,048 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:15:59,515 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:39:57,133 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:39:57,141 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:39:57,320 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:39:57,401 - INFO - D:\dream11-team-predictor\backend\predictor\management\commands\scrape_cricinfo.py changed, reloading.
+2025-05-30 11:39:57,405 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:39:57,605 - INFO - D:\dream11-team-predictor\backend\predictor\views.py changed, reloading.
+2025-05-30 11:39:57,700 - INFO - D:\dream11-team-predictor\backend\predictor\management\commands\scrape_cricinfo.py changed, reloading.
+2025-05-30 11:39:57,834 - INFO - D:\dream11-team-predictor\backend\predictor\management\commands\scrape_cricinfo.py changed, reloading.
+2025-05-30 11:39:57,882 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:26,869 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:26,903 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,084 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,504 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,615 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,690 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,860 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,948 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 11:40:27,969 - INFO - D:\dream11-team-predictor\backend\predictor\serializers.py changed, reloading.
+2025-05-30 14:13:14,639 - WARNING - Not Found: /
+2025-05-30 14:13:14,757 - WARNING - Not Found: /favicon.ico
+2025-05-30 14:14:36,573 - INFO - Database setup complete
+2025-05-30 14:14:36,573 - INFO - Fetching URL: https://www.espncricinfo.com/series/indian-premier-league-2025-1275062/match-schedule
+2025-05-30 14:14:36,875 - ERROR - Error fetching https://www.espncricinfo.com/series/indian-premier-league-2025-1275062/match-schedule: 403 Client Error: Forbidden for url: https://www.espncricinfo.com/series/indian-premier-league-2025-1275062/match-schedule
+2025-05-30 14:14:36,875 - ERROR - Failed to get match results for IPL 2025
+2025-05-30 14:15:04,097 - INFO - Data import complete!
+2025-05-30 14:15:06,850 - INFO - Database setup complete
+2025-05-30 14:15:06,850 - INFO - Cleaned up 0 non-2025 matches while preserving all player, team, and venue data.
+2025-05-30 14:16:37,526 - INFO - D:\dream11-team-predictor\backend\predictor\admin.py changed, reloading.
+2025-05-30 14:16:59,204 - INFO - D:\dream11-team-predictor\backend\predictor\admin.py changed, reloading.
+2025-05-30 14:28:38,056 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:28:46,314 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:28:49,797 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:28:52,226 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:28:53,909 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:29:07,964 - WARNING - Unauthorized: /api/token/refresh/
+2025-05-30 14:40:16,133 - WARNING - Not Found: /api/token/
+2025-05-30 14:40:55,712 - WARNING - Bad Request: /api/register/

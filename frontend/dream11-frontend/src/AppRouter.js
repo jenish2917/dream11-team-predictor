@@ -30,8 +30,7 @@ const AppRouter = () => {
               <ProtectedRoute>
                 <DashboardPage />
               </ProtectedRoute>
-            } />
-            <Route path="/prediction-results" element={
+            } />            <Route path="/prediction-results/:id" element={
               <ProtectedRoute>
                 <PredictionResultsPage />
               </ProtectedRoute>

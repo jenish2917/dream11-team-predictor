@@ -18,8 +18,7 @@ const Signup = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -33,9 +32,12 @@ const Signup = () => {
     
     try {
       await authService.register({
-        name: formData.name,
+        username: formData.name,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        password2: formData.confirmPassword,
+        first_name: formData.name.split(' ')[0],
+        last_name: formData.name.split(' ').slice(1).join(' ') || ''
       });
       
       // Redirect to login after successful signup
@@ -43,7 +45,11 @@ const Signup = () => {
         state: { message: 'Registration successful! Please log in.' } 
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to register. Please try again.');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.detail || 
+               (err.response?.data && typeof err.response.data === 'object' 
+                ? Object.values(err.response.data).flat().join(', ') 
+                : 'Failed to register. Please try again.'));
     } finally {
       setIsLoading(false);
     }

@@ -120,10 +120,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
-    
     def validate(self, data):
         if data['password'] != data['password2']:
             raise serializers.ValidationError({"password": "Passwords must match."})
+        
+        # Check for existing users with the same username or email
+        if User.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError({"username": "A user with this username already exists."})
+            
+        if User.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError({"email": "A user with this email already exists."})
+            
         return data
     
     def create(self, validated_data):

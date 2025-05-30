@@ -18,18 +18,19 @@ const Login = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
     try {
       const response = await authService.login(formData);
-      login(response.user, response.token);
+      // Django Simple JWT returns access and refresh tokens
+      login(response.access, response.refresh);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+      console.error('Login error:', err);
+      setError(err.response?.data?.detail || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }

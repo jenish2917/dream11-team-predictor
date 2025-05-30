@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import api from '../services/api';
+import { authService } from '../services/api';
 
 const SignupPage = () => {
   const { login } = useAuth();
@@ -24,7 +24,6 @@ const SignupPage = () => {
       [e.target.name]: e.target.value
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -37,19 +36,24 @@ const SignupPage = () => {
     setIsLoading(true);
 
     try {
-      // For demo purposes, simulate API call success
-      // In a real app, this would be an actual API call
-      // const response = await api.auth.register(formData);
-      // login(response.data.user, response.data.token);
+      // Convert the form data to the format expected by the backend
+      const userData = {
+        username: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password2: formData.confirmPassword
+      };
       
-      // Simulated successful registration
-      setTimeout(() => {
-        const mockUser = { id: 1, name: formData.name, email: formData.email };
-        const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkRlbW8gVXNlciIsImlhdCI6MTUxNjIzOTAyMn0';
-        login(mockUser, mockToken);
+      // Make real API call to register
+      const response = await authService.register(userData);
+      
+      // If successful, log the user in with the returned tokens
+      if (response && response.access && response.refresh) {
+        login(response.access, response.refresh);
         navigate('/dashboard');
-        setIsLoading(false);
-      }, 1000);
+      } else {
+        throw new Error('Registration successful but no tokens received');
+      }
       
     } catch (err) {
       console.error('Signup error:', err);
@@ -174,15 +178,15 @@ const SignupPage = () => {
           </div>
           
           <div className="text-sm text-center">
-            <p className="text-gray-600 dark:text-gray-400">
+      <p className="text-gray-600 dark:text-gray-400">
               By signing up, you agree to our{' '}
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+              <button type="button" onClick={() => alert('Terms of Service clicked')} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
                 Terms of Service
-              </a>{' '}
+              </button>{' '}
               and{' '}
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+              <button type="button" onClick={() => alert('Privacy Policy clicked')} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
                 Privacy Policy
-              </a>
+              </button>
             </p>
           </div>
         </form>

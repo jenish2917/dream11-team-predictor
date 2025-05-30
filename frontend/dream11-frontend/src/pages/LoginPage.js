@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import api from '../services/api';
+import { authService } from '../services/api';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -21,31 +21,47 @@ const LoginPage = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-  };
-
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      // For demo purposes, simulate API call success
-      // In a real app, this would be an actual API call
-      // const response = await api.auth.login(formData);
-      // login(response.data.user, response.data.token);
+      // Convert the form data to the format expected by the backend
+      const credentials = {
+        username: formData.email, // Backend might expect username instead of email
+        password: formData.password
+      };
       
-      // Simulated successful login
-      setTimeout(() => {
-        const mockUser = { id: 1, name: 'Demo User', email: formData.email };
-        const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkRlbW8gVXNlciIsImlhdCI6MTUxNjIzOTAyMn0';
-        login(mockUser, mockToken);
-        navigate('/dashboard');
-        setIsLoading(false);
-      }, 1000);
+      console.log('Attempting login with:', { username: credentials.username });
+      
+      // Make actual API call to authenticate
+      const response = await authService.login(credentials);
+      
+      // If successful, log the user in with the returned tokens
+      if (response && response.access && response.refresh) {
+        const loginSuccess = login(response.access, response.refresh);
+        
+        if (loginSuccess) {
+          console.log('Login successful, navigating to dashboard');
+          // Add a slight delay to ensure state is updated before navigation
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 100);
+        } else {
+          throw new Error('Failed to process authentication tokens');
+        }
+      } else {
+        throw new Error('Authentication successful but no tokens received');
+      }
       
     } catch (err) {
       console.error('Login error:', err);
-      setError('Invalid email or password. Please try again.');
+      if (err.response?.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else {
+        setError(`Login failed: ${err.message || 'Unknown error occurred'}`);
+      }
       setIsLoading(false);
     }
   };
@@ -118,12 +134,14 @@ const LoginPage = () => {
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
                 Remember me
               </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+            </div>            <div className="text-sm">
+              <button 
+                type="button" 
+                onClick={() => alert('Password recovery feature coming soon!')}
+                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
                 Forgot your password?
-              </a>
+              </button>
             </div>
           </div>
 
