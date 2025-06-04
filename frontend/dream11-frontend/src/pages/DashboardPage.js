@@ -10,6 +10,8 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(false);
   const [recentMatches, setRecentMatches] = useState([]);
   const [loadingMatches, setLoadingMatches] = useState(true);
+  const [pipelineStatus, setPipelineStatus] = useState(null);
+  const [dataUpdateLoading, setDataUpdateLoading] = useState(false);
   
   // React Hook Form setup
   const { register, handleSubmit, control, formState: { errors }, watch } = useForm({
@@ -84,7 +86,6 @@ const DashboardPage = () => {
       }
     })
   };
-
   const onSubmit = async (data) => {
     setLoading(true);
     
@@ -95,7 +96,7 @@ const DashboardPage = () => {
         team2: data.team2.value,
         venue: data.venue.value,
         pitchCondition: data.pitchCondition.value,
-        date: data.date
+        updateData: data.updateData || false
       };
       
       // Make actual API call to generate predictions
@@ -110,22 +111,47 @@ const DashboardPage = () => {
       setLoading(false);
     }
   };
-
-  // Fetch recent matches
+  
+  const updatePlayerData = async () => {
+    setDataUpdateLoading(true);
+    try {
+      const response = await predictionService.updatePlayerData();
+      alert('Player data update initiated. This may take a few minutes.');
+      checkPipelineStatus();
+    } catch (err) {
+      console.error("Error updating player data:", err);
+      alert('Failed to update player data. Please try again.');
+    } finally {
+      setDataUpdateLoading(false);
+    }
+  };
+  
+  const checkPipelineStatus = async () => {
+    try {
+      const status = await predictionService.checkPipelineStatus();
+      setPipelineStatus(status);
+    } catch (err) {
+      console.error("Error checking pipeline status:", err);
+    }
+  };
+  // Fetch recent matches and pipeline status
   useEffect(() => {
-    const fetchRecentMatches = async () => {
+    const fetchInitialData = async () => {
       try {
-        // Using the same endpoint as history but limiting to 3 items
+        // Fetch recent matches
         const data = await predictionService.getUserHistory();
         setRecentMatches(data.slice(0, 3));
+        
+        // Fetch pipeline status
+        await checkPipelineStatus();
       } catch (err) {
-        console.error("Error fetching recent matches:", err);
+        console.error("Error fetching initial data:", err);
       } finally {
         setLoadingMatches(false);
       }
     };
 
-    fetchRecentMatches();
+    fetchInitialData();
   }, []);
 
   return (
@@ -134,10 +160,23 @@ const DashboardPage = () => {
         <h1 className="text-2xl font-bold mb-6 dark:text-white">Dream11 Team Predictor</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Prediction Form */}
-          <div className="lg:col-span-2">
+          {/* Prediction Form */}          <div className="lg:col-span-2">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 dark:text-white">Generate Prediction</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold dark:text-white">Generate Prediction</h2>
+                
+                {pipelineStatus && (
+                  <div className="flex items-center">
+                    <span className="text-sm mr-2 dark:text-gray-300">Data Status:</span>
+                    {pipelineStatus.data_collection ? (
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Up to date</span>
+                    ) : (
+                      <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Update recommended</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Team 1 Selection */}
@@ -256,11 +295,43 @@ const DashboardPage = () => {
                     {errors.date && (
                       <p className="mt-1 text-sm text-red-600">{errors.date.message}</p>
                     )}
-                  </div>
+                  </div>                </div>
+                
+                {/* Force Data Update */}
+                <div className="flex items-center mt-4">
+                  <input
+                    type="checkbox"
+                    id="updateData"
+                    {...register('updateData')}
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="updateData" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Force data update during prediction (takes longer)
+                  </label>
                 </div>
                 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center mt-6">
+                  <button
+                    type="button"
+                    onClick={updatePlayerData}
+                    disabled={dataUpdateLoading}
+                    className={`
+                      ${dataUpdateLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}
+                      text-white px-4 py-2 rounded-md text-sm transition-colors duration-200
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+                      flex items-center
+                    `}
+                  >
+                    {dataUpdateLoading && (
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
+                    {dataUpdateLoading ? 'Updating Players...' : 'Update Player Data'}
+                  </button>
+                  
                   <button
                     type="submit"
                     disabled={loading}

@@ -1,29 +1,24 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import LoginPrompt from './LoginPrompt';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading, refreshTokenIfNeeded } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
   const location = useLocation();
   const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
-
   // Effect to check authentication status when component mounts
   React.useEffect(() => {
+    // Simple check to see if user is logged in
     const checkAuth = async () => {
-      try {
-        // Try to refresh token if needed
-        if (!isAuthenticated && !loading) {
-          await refreshTokenIfNeeded();
-        }
-      } catch (err) {
-        console.error("Authentication check failed:", err);
-      } finally {
+      // Short delay to ensure auth state is loaded
+      setTimeout(() => {
         setIsCheckingAuth(false);
-      }
+      }, 500);
     };
     
     checkAuth();
-  }, [isAuthenticated, loading, refreshTokenIfNeeded]);
+  }, [loading]);
 
   // Show loading state while checking authentication
   if (loading || isCheckingAuth) {
@@ -34,11 +29,10 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-
   // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    console.log('User not authenticated, redirecting to login');
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isLoggedIn) {
+    console.log('User not authenticated, showing login prompt');
+    return <LoginPrompt />;
   }
 
   console.log('User authenticated, rendering protected content');

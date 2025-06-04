@@ -44,10 +44,8 @@ const LoginPage = () => {
         
         if (loginSuccess) {
           console.log('Login successful, navigating to dashboard');
-          // Add a slight delay to ensure state is updated before navigation
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 100);
+          // Navigate to dashboard page
+          navigate('/dashboard');
         } else {
           throw new Error('Failed to process authentication tokens');
         }

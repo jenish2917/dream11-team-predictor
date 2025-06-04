@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import TeamComposition from '../components/dashboard/TeamComposition';
 import PlayerTable from '../components/dashboard/PlayerTable';
 import CompositionGraph from '../components/dashboard/CompositionGraph';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const PredictionResultsPage = () => {
   const navigate = useNavigate();

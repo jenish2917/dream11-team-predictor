@@ -3,7 +3,6 @@ ESPNcricinfo Scraper for Dream11 Team Predictor
 
 This script scrapes cricket data from ESPNcricinfo for use in the Dream11 Team Predictor application.
 It collects match results, player statistics, and venue information.
-Updated to support 2025 IPL match data.
 """
 
 import requests
@@ -114,7 +113,6 @@ class ESPNCricinfoScraper:
             winner_id INTEGER,
             match_type TEXT,
             series_id TEXT,
-            season_year INTEGER,
             FOREIGN KEY (team1_id) REFERENCES teams (id),
             FOREIGN KEY (team2_id) REFERENCES teams (id),
             FOREIGN KEY (venue_id) REFERENCES venues (id),
@@ -182,22 +180,17 @@ class ESPNCricinfoScraper:
             DataFrame of matches
         """
         if not series_id:
-            # For 2025 IPL, we use a custom series ID format
-            if season_year == 2025:
-                # Adjust series ID for 2025 season
-                series_id = f"indian-premier-league-2025-1275062"
-            else:
-                # Default format for other seasons
-                series_id = f"indian-premier-league-{season_year}"
+            # If series_id is not provided, we could try to find it, but for now, use a default format
+            series_id = f"indian-premier-league-{season_year}"
             
-        url = f'https://www.espncricinfo.com/series/{series_id}/match-schedule'
+        url = f'https://www.espncricinfo.com/series/{series_id}/match-results'
         
         soup = self._get_soup(url)
         if not soup:
             logger.error(f"Failed to get match results for IPL {season_year}")
             return pd.DataFrame()
             
-        # Find all match cards - adjusted selector for 2025 IPL format
+        # Find all match cards
         match_elements = soup.select('div.ds-flex.ds-flex-wrap')
         matches_data = []
         
@@ -227,11 +220,9 @@ class ESPNCricinfoScraper:
                 venue = info_text.split(',')[0] if ',' in info_text else ''
                 date_str = info_text.split(',')[-1].strip() if ',' in info_text else ''
                 
-                # For scheduled matches that haven't been played yet
-                result = "Scheduled"
-                
-                # Only include matches from 2025 season
-                match_year = 2025
+                # Extract result
+                result_element = match_element.select_one('p.ds-text-tight-s')
+                result = result_element.text.strip() if result_element else 'No result'
                 
                 matches_data.append({
                     'match_id': match_id,
@@ -240,54 +231,19 @@ class ESPNCricinfoScraper:
                     'venue': venue,
                     'date': date_str,
                     'result': result,
-                    'match_url': match_url,
-                    'season_year': match_year
+                    'match_url': match_url
                 })
                 
-                logger.info(f"Extracted 2025 match: {team1} vs {team2} at {venue}")
+                logger.info(f"Extracted match: {team1} vs {team2} at {venue}")
                 self._random_delay()
                 
             except Exception as e:
                 logger.error(f"Error extracting match data: {e}")
         
-        # Store matches in DataFrame
         matches_df = pd.DataFrame(matches_data)
+        matches_df.to_csv(os.path.join(self.data_dir, f"ipl_{season_year}_matches.csv"), index=False)
         
-        # Filter to include only 2025 matches
-        matches_df = matches_df[matches_df['season_year'] == 2025]
-        
-        # Save to CSV
-        matches_df.to_csv(os.path.join(self.data_dir, f"ipl_2025_matches.csv"), index=False)
-        logger.info(f"Successfully scraped {len(matches_df)} matches for IPL 2025")
         return matches_df
-        
-    def clean_seed_data(self):
-        """
-        Clean up sample match data from the database, keeping only 2025 IPL matches.
-        This preserves all player data, team data, and venue data.
-        """
-        try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            
-            # First, count the non-2025 matches that will be cleaned
-            cursor.execute("SELECT COUNT(*) FROM matches WHERE season_year != 2025 OR season_year IS NULL")
-            match_count = cursor.fetchone()[0]
-            
-            # Delete performances for non-2025 matches (preserves all player data)
-            cursor.execute("DELETE FROM player_performances WHERE match_id IN (SELECT id FROM matches WHERE season_year != 2025 OR season_year IS NULL)")
-            
-            # Delete only match records that aren't from 2025 (preserves all team and venue data)
-            cursor.execute("DELETE FROM matches WHERE season_year != 2025 OR season_year IS NULL")
-            
-            conn.commit()
-            conn.close()
-            logger.info(f"Cleaned up {match_count} non-2025 matches while preserving all player, team, and venue data.")
-            
-            return True
-        except Exception as e:
-            logger.error(f"Error cleaning seed data: {e}")
-            return False
     
     def scrape_match_scorecard(self, match_url):
         """
@@ -693,27 +649,16 @@ class Command(BaseCommand):
     help = 'Scrape cricket data from ESPNCricinfo and import it into the database'
     
     def add_arguments(self, parser):
-        parser.add_argument('--season', type=int, help='IPL season year to scrape (e.g., 2025)')
+        parser.add_argument('--season', type=int, help='IPL season year to scrape (e.g., 2023)')
         parser.add_argument('--series-id', type=str, help='ESPNcricinfo series ID')
         parser.add_argument('--match-url', type=str, help='ESPNcricinfo match URL to scrape')
         parser.add_argument('--player-id', type=str, help='ESPNcricinfo player ID to scrape')
         parser.add_argument('--import-only', action='store_true', help='Import existing data without scraping')
-        parser.add_argument('--clean-seed-data', action='store_true', help='Clean up seed/sample data, keeping only 2025 data')
     
     def handle(self, *args, **options):
         # Initialize scraper
         base_dir = os.path.dirname(os.path.abspath(__file__))
         scraper = ESPNCricinfoScraper(base_dir=base_dir)
-        
-        # Clean seed data if requested
-        if options['clean_seed_data']:
-            self.stdout.write('Cleaning seed/sample data from database...')
-            success = scraper.clean_seed_data()
-            if success:
-                self.stdout.write(self.style.SUCCESS('Successfully cleaned seed data!'))
-            else:
-                self.stdout.write(self.style.ERROR('Failed to clean seed data'))
-            return
         
         # Import existing data if requested
         if options['import_only']:
@@ -729,16 +674,10 @@ class Command(BaseCommand):
         if options['season']:
             season_year = options['season']
             series_id = options['series_id']
-            
-            # Set 2025 as default season if not specified
-            if not season_year:
-                season_year = 2025
-                self.stdout.write(f'No season specified, defaulting to IPL 2025')
-                
             self.stdout.write(f'Scraping IPL {season_year} matches...')
             
             matches_df = scraper.scrape_ipl_matches(season_year, series_id)
-            self.stdout.write(f'Found {len(matches_df)} matches from {season_year} season')
+            self.stdout.write(f'Found {len(matches_df)} matches')
             
             # Optionally scrape match details
             if not matches_df.empty and self.confirm('Do you want to scrape details for these matches?'):
@@ -764,7 +703,7 @@ class Command(BaseCommand):
         
         # No specific action
         else:
-            self.stdout.write(self.style.WARNING('No action specified. Use --season 2025 to scrape 2025 IPL data or --help to see available options.'))
+            self.stdout.write(self.style.WARNING('No action specified. Use --help to see available options.'))
             return
         
         # Import to Django

@@ -379,8 +379,6 @@ class PredictionViewSet(viewsets.ModelViewSet):
 # Prediction API
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def predict_team(request):
     """
     API endpoint that predicts Dream11 teams based on input parameters.

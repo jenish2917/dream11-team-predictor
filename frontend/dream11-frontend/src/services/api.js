@@ -118,7 +118,7 @@ api.interceptors.response.use(
 // Authentication Services
 export const authService = {  login: async (credentials) => {
     try {
-      const response = await api.post('/token/', credentials);
+      const response = await api.post('/auth/login/', credentials);
       
       if (!response.data || !response.data.access || !response.data.refresh) {
         console.error('Invalid response format from login endpoint:', response);
@@ -141,7 +141,7 @@ export const authService = {  login: async (credentials) => {
   },
   
   register: async (userData) => {
-    const response = await api.post('/register/', userData);
+    const response = await api.post('/auth/register/', userData);
     return response.data;
   },
   
@@ -161,7 +161,7 @@ export const authService = {  login: async (credentials) => {
     }
     
     // Use our api instance with interceptors, not raw axios
-    const response = await api.post(`/token/refresh/`, {
+    const response = await api.post(`/auth/token/refresh/`, {
       refresh: refreshToken
     }, {
       // Skip the auth interceptor for this specific request
@@ -208,13 +208,23 @@ export const venueService = {
 // Prediction Service
 export const predictionService = {
   predictTeam: async (data) => {
-    const response = await api.post('/predict-team/', {
+    const response = await api.post('/predict_team_with_pipeline/', {
       team1: data.team1,
       team2: data.team2,
       venue: data.venue,
       pitch_type: data.pitchCondition,
-      date: data.date
+      update_data: data.updateData || false
     });
+    return response.data;
+  },
+  
+  updatePlayerData: async () => {
+    const response = await api.post('/update_player_data/');
+    return response.data;
+  },
+  
+  checkPipelineStatus: async () => {
+    const response = await api.get('/check_pipeline_status/');
     return response.data;
   },
   
