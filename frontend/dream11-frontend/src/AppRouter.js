@@ -15,7 +15,6 @@ import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
-import PipelineSettingsPage from './pages/PipelineSettingsPage';
 
 const AppRouter = () => {
   return (
@@ -43,11 +42,6 @@ const AppRouter = () => {
             } />            <Route path="/settings" element={
               <ProtectedRoute>
                 <SettingsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/pipeline-settings" element={
-              <ProtectedRoute>
-                <PipelineSettingsPage />
               </ProtectedRoute>
             } />
             <Route path="/profile" element={

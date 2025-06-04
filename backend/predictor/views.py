@@ -384,115 +384,193 @@ def predict_team(request):
     API endpoint that predicts Dream11 teams based on input parameters.
     
     Parameters:
-    - team1: ID of the first team
-    - team2: ID of the second team
-    - venue: ID of the venue
-    - pitch_type: Type of pitch (BAT/BWL/BAL/SPIN)
+    - team1: Name of the first team
+    - team2: Name of the second team
+    - budget: Total budget in crores (optional, default: 100)
     
     Returns:
-    - Three predicted team compositions (Aggressive, Balanced, Risk-averse)
+    - The best predicted team composition
     """
     try:
         # Extract parameters
-        team1_id = request.data.get('team1')
-        team2_id = request.data.get('team2')
-        venue_id = request.data.get('venue')
-        pitch_type = request.data.get('pitch_type')
+        team1_raw = request.data.get('team1')
+        team2_raw = request.data.get('team2')
+        
+        # Normalise to string for later comparisons
+        team1_name, team2_name = str(team1_raw).strip(), str(team2_raw).strip()
+        
+        try:
+            budget = float(request.data.get('budget', 100))
+        except (TypeError, ValueError):
+            return Response({"error": "Budget must be a number"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Validate parameters
-        if not all([team1_id, team2_id, venue_id, pitch_type]):
-            return Response({"error": "All parameters are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not all([team1_name, team2_name]):
+            return Response({"error": "Both team names are required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get objects
-        team1 = get_object_or_404(Team, pk=team1_id)
-        team2 = get_object_or_404(Team, pk=team2_id)
-        venue = get_object_or_404(Venue, pk=venue_id)
+        # Get team objects from database if they exist
+        team1 = None
+        team2 = None
         
+        try:
+            # First try to get by ID if numeric
+            if team1_name.isdigit():
+                team1 = Team.objects.get(id=int(team1_name))
+            if team2_name.isdigit():
+                team2 = Team.objects.get(id=int(team2_name))
+        except (Team.DoesNotExist, ValueError, AttributeError):
+            # Added AttributeError to the exceptions we catch
+            pass
+        
+        # If not found by ID, try by name
+        if not team1:
+            try:
+                team1 = Team.objects.get(name__iexact=team1_name)
+            except Team.DoesNotExist:
+                pass
+                
+        if not team2:
+            try:
+                team2 = Team.objects.get(name__iexact=team2_name)
+            except Team.DoesNotExist:
+                pass
+        
+        # Use direct prediction from our logic module if teams not in database
+        if not team1 or not team2:
+            # Use the prediction logic directly
+            from .logic.prediction import Dream11TeamPredictor
+            
+            # Initialize predictor with the data folder
+            data_folder = os.path.join(os.path.dirname(settings.BASE_DIR), 'data', 'IPL-DATASET')
+            predictor = Dream11TeamPredictor(data_folder)
+            
+            # Make prediction
+            team_prediction = predictor.predict_team(team1_name, team2_name, budget=budget)
+            
+            # Format for response
+            response_data = {
+                "message": "Prediction successful using direct prediction logic",
+                "prediction": {
+                    "team": [
+                        {
+                            "name": player["name"],
+                            "role": player["role"],
+                            "fantasy_points": player.get("fantasy_points", 0),
+                            "team": player["team"]
+                        } for player in team_prediction["team"]
+                    ],
+                    "score": team_prediction["score"],
+                    "budget_used": team_prediction["budget_used"],
+                    "budget_remaining": team_prediction["budget_remaining"],
+                    "roles": team_prediction["roles"],
+                    "team_distribution": team_prediction["team_distribution"]
+                }
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        # If we have the teams in the database, use the database approach
         # Get players from both teams
         team1_players = Player.objects.filter(team=team1)
         team2_players = Player.objects.filter(team=team2)
-        all_players = list(team1_players) + list(team2_players)        # Use our enhanced prediction algorithm to generate team recommendations
-        from .prediction_algorithm_enhanced import TeamPredictor
+        all_players = list(team1_players) + list(team2_players)
         
-        # Get ML predictions if available
-        try:
-            from .player_performance_predictor_fixed import PlayerPerformancePredictor
-            
-            # Initialize ML predictor
-            data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'management', 'commands', 'cricket_data')
-            ml_predictor = PlayerPerformancePredictor(data_dir)
-            
-            # Try to load ML models
-            if ml_predictor.load_models():
-                # Generate ML predictions for all players
-                ml_predictions = {}
-                for player in all_players:
-                    player_data = {
-                        'player_name': player.name,
-                        'role': player.role,
-                        'team': player.team.name,
-                        'opposing_team': team2.name if player.team == team1 else team1.name,
-                        'venue': venue.name
-                    }
-                    player_prediction = ml_predictor.predict_performance(player_data)
-                    ml_predictions[player.id] = player_prediction
-                    
-                # Create enhanced predictor with ML predictions
-                predictor = TeamPredictor(team1_id, team2_id, venue_id, pitch_type, ml_predictions=ml_predictions)
-            else:
-                # Fall back to standard predictor if ML models aren't available
-                predictor = TeamPredictor(team1_id, team2_id, venue_id, pitch_type)
-        except Exception as e:
-            logging.warning(f"ML predictions unavailable: {str(e)}. Using standard predictor.")
-            predictor = TeamPredictor(team1_id, team2_id, venue_id, pitch_type)
-            
-        predictions = predictor.predict_teams()
+        # Create a new prediction record
+        prediction = Prediction.objects.create(
+            user=request.user,
+            team1=team1,
+            team2=team2,
+            prediction_type='BAL'  # Balanced prediction
+        )
         
-        # Save predictions to database
-        for pred_type, players_data in predictions.items():
-            prediction = Prediction.objects.create(
-                user=request.user,
-                team1=team1,
-                team2=team2,
-                venue=venue,
-                pitch_type=pitch_type,
-                prediction_type=pred_type
+        # Sort players by fantasy points
+        sorted_players = sorted(all_players, key=lambda p: p.fantasy_points, reverse=True)
+        
+        # Define role mapping to normalize between DB abbreviations and full names
+        role_map = {
+            "BAT": "Batsman", 
+            "BWL": "Bowler", 
+            "AR": "All-Rounder", 
+            "WK": "Wicket-Keeper"
+        }
+        
+        # Select top 11 players ensuring at least one wicket keeper
+        selected_players = []
+        roles = {"Batsman": 0, "Bowler": 0, "All-Rounder": 0, "Wicket-Keeper": 0}
+        team_counts = {team1.name: 0, team2.name: 0}
+        
+        # First, select one wicket keeper
+        wks = [p for p in sorted_players if role_map.get(p.role, p.role) == "Wicket-Keeper"]
+        if wks:
+            selected_players.append(wks[0])
+            roles["Wicket-Keeper"] += 1
+            team_counts[wks[0].team.name] += 1
+        
+        # Then select the rest based on fantasy points
+        for player in sorted_players:
+            if len(selected_players) >= 11:
+                break
+                
+            if player in selected_players:
+                continue
+                  # Check team limit (max 7 players per team)
+            if team_counts.get(player.team.name, 0) >= 7:
+                continue
+                
+            # Add player
+            selected_players.append(player)
+            canonical_role = role_map.get(player.role, player.role)
+            roles[canonical_role] += 1
+            team_counts[player.team.name] = team_counts.get(player.team.name, 0) + 1
+        
+        # Save the selected players to the prediction
+        total_points = 0
+        for player in selected_players:
+            # Randomly assign captain and vice-captain for now
+            is_captain = False
+            is_vice_captain = False
+            
+            if player == selected_players[0]:  # Top player is captain
+                is_captain = True
+            elif player == selected_players[1]:  # Second best player is vice-captain
+                is_vice_captain = True
+                
+            pp = PredictionPlayer.objects.create(
+                prediction=prediction,
+                player=player,
+                is_captain=is_captain,
+                is_vice_captain=is_vice_captain,
+                expected_points=player.fantasy_points
             )
             
-            # Save the individual players in the prediction
-            for player_data in players_data:
-                PredictionPlayer.objects.create(
-                    prediction=prediction,
-                    player=player_data['player'],
-                    is_captain=player_data['is_captain'],
-                    is_vice_captain=player_data['is_vice_captain'],
-                    expected_points=player_data['expected_points']
-                )
+            # Add to total points (captain gets 2x, vice-captain 1.5x)
+            if is_captain:
+                total_points += player.fantasy_points * 2
+            elif is_vice_captain:
+                total_points += player.fantasy_points * 1.5
+            else:
+                total_points += player.fantasy_points
         
         # Generate response with prediction details
         response_data = {
             "message": "Prediction successful",
-            "predictions": {
-                "AGG": PredictionDetailSerializer(
-                    Prediction.objects.filter(user=request.user, team1=team1, team2=team2, prediction_type='AGG')
-                    .order_by('-created_at').first()
-                ).data,
-                "BAL": PredictionDetailSerializer(
-                    Prediction.objects.filter(user=request.user, team1=team1, team2=team2, prediction_type='BAL')
-                    .order_by('-created_at').first()
-                ).data,
-                "RISK": PredictionDetailSerializer(
-                    Prediction.objects.filter(user=request.user, team1=team1, team2=team2, prediction_type='RISK')
-                    .order_by('-created_at').first()
-                ).data
-            },
-            "graphs": generate_mock_graphs(team1, team2)
+            "prediction": PredictionDetailSerializer(prediction).data,
+            "team_summary": {
+                "total_points": total_points,
+                "roles": roles,
+                "team_distribution": team_counts
+            }
         }
         
         return Response(response_data, status=status.HTTP_200_OK)
         
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logging.error(f"Error in predict_team: {str(e)}")
+        import traceback
+        return Response({
+            "error": str(e), 
+            "traceback": traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Mock data generation helpers
@@ -1008,5 +1086,97 @@ def enhance_player_stats(request):
         logging.error(f"Error in enhance_player_stats view: {str(e)}")
         return Response(
             {"error": f"An error occurred: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def load_csv_data(request):
+    """
+    Load data from all CSV files in the data directory.
+    This will parse the files and store the data in the database.
+    """
+    try:
+        from .logic.prediction import Dream11TeamPredictor
+        import os
+        from django.conf import settings
+        
+        # Determine the data folder path
+        data_folder = os.path.join(os.path.dirname(settings.BASE_DIR), 'data', 'IPL-DATASET')
+        if not os.path.exists(data_folder):
+            return Response(
+                {"error": f"Data folder not found at {data_folder}"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Initialize the predictor with the data folder
+        predictor = Dream11TeamPredictor(data_folder)
+        
+        # Get teams and player data
+        teams = predictor.get_all_teams()
+        
+        # Create or update team records in database
+        for team_name in teams:
+            team, created = Team.objects.get_or_create(
+                name=team_name,
+                defaults={
+                    'short_name': team_name[:3].upper(),
+                    'location': team_name.split(' ')[0] if ' ' in team_name else team_name
+                }
+            )
+            
+            # Get players for this team
+            players = predictor.get_team_players(team_name)
+            
+            # Create or update player records
+            for player_data in players:
+                player_name = player_data["name"]
+                player_role = player_data["role"]
+                
+                player, created = Player.objects.get_or_create(
+                    name=player_name,
+                    defaults={
+                        'team': team,
+                        'role': player_role,
+                        'fantasy_points': 0,
+                        'recent_form': 0
+                    }
+                )
+                
+                if not created:
+                    # Update existing player's team and role
+                    player.team = team
+                    player.role = player_role
+                    player.save()
+        
+        # Calculate player fantasy points and update the database
+        for team1 in teams:
+            for team2 in teams:
+                if team1 != team2:
+                    player_scores = predictor.calculate_player_scores(team1, team2)
+                    
+                    # Update fantasy points for players
+                    for player_name, data in player_scores.items():
+                        try:
+                            player = Player.objects.get(name=player_name)
+                            player.fantasy_points = data["fantasy_points"]
+                            player.recent_form = data["fantasy_points"] * 0.8  # Simulating recent form
+                            player.save()
+                        except Player.DoesNotExist:
+                            pass  # Skip players not found in the database
+        
+        return Response({
+            "message": "Data loaded successfully",
+            "teams_loaded": len(teams),
+            "players_loaded": Player.objects.count()
+        })
+    
+    except Exception as e:
+        import traceback
+        return Response(
+            {
+                "error": f"Failed to load data: {str(e)}",
+                "traceback": traceback.format_exc()
+            },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

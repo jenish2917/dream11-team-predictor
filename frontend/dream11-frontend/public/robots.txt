@@ -1,0 +1,6 @@
+/* 
+  This file is used to configure global styles for the application's robots.txt
+  Learn more about robots.txt: https://www.robotstxt.org/robotstxt.html
+*/
+User-agent: *
+Allow: /

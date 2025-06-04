@@ -6,7 +6,16 @@ It can work in standalone mode or as part of the Django application.
 """
 import os
 import logging
+import csv
+import random
+import sys
 from pathlib import Path
+
+# Configure basic logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 # Try to use pandas and numpy, but provide fallbacks if not available
 try:
@@ -14,8 +23,6 @@ try:
     import numpy as np
     HAS_DEPENDENCIES = True
 except ImportError:
-    import csv
-    import random
     HAS_DEPENDENCIES = False
     logging.warning("pandas and/or numpy not available. Using CSV reader fallback.")
 
@@ -136,7 +143,6 @@ class Dream11TeamPredictor:
         except Exception as e:
             logging.error(f"Error loading data with CSV: {str(e)}")
             raise
-    
     def _load_team_data_csv(self):
         """
         Load team data from the auction CSV file using standard csv module
@@ -150,27 +156,44 @@ class Dream11TeamPredictor:
             with open(auction_file, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
                 for row in reader:
-                    if len(row) < 2:
+                    if not row or len(row) < 1:
                         continue
-                    
-                    # If first column has a value but second is empty, it's a team header
-                    if row[0].strip() and not row[1].strip():
-                        current_team = row[0].strip()
-                        self.teams[current_team] = []
-                    elif current_team and row[1].strip():
-                        player_name = row[1].strip()
-                        player_role = row[2].strip() if len(row) > 2 and row[2].strip() else "Unknown"
-                        player_price = float(row[3].strip()) if len(row) > 3 and row[3].strip() else 0.0
                         
-                        self.teams[current_team].append({
-                            "name": player_name,
-                            "role": player_role,
-                            "price": player_price,
-                            "team": current_team
-                        })
+                    # Team headers have the format "Team Name,,,,"
+                    if row[0].strip() and (len(row) < 2 or not row[1].strip()):
+                        team_name = row[0].strip()
+                        if team_name != "team names":  # Skip the header row
+                            current_team = team_name
+                            self.teams[current_team] = []
+                            logging.info(f"Found team: {current_team}")
+                    elif current_team and len(row) >= 4:
+                        # Check if this is a player row (has index and name)
+                        if row[1].strip():
+                            player_name = row[1].strip()
+                            # Use the Capped/Uncapped field to determine role
+                            capped = row[4].strip() if len(row) > 4 else "Unknown"
+                            
+                            # Attempt to determine role based on name patterns and other data
+                            # This is a simplistic approach - in a real-world scenario,
+                            # you'd have a database with player roles
+                            role = self._determine_player_role(player_name)
+                            
+                            # Extract price from the 'Winning Bid' field and convert to numeric
+                            price_str = row[3].strip() if len(row) > 3 else "₹0"
+                            # Remove the ₹ symbol and commas, then convert to float
+                            price_numeric = float(price_str.replace('₹', '').replace(',', ''))
+                            # Convert price to crores for easier budget calculations
+                            price_crores = price_numeric / 10000000 if price_numeric > 0 else 0.1
+                            
+                            self.teams[current_team].append({
+                                "name": player_name,
+                                "role": role,
+                                "price": price_crores,
+                                "capped": capped == "Capped",
+                                "team": current_team
+                            })
             
-            logging.info(f"Loaded {len(self.teams)} teams")
-            
+            logging.info(f"Loaded {len(self.teams)} teams with {sum(len(players) for players in self.teams.values())} players")
         except Exception as e:
             logging.error(f"Error loading team data: {str(e)}")
             raise
@@ -305,9 +328,112 @@ class Dream11TeamPredictor:
         Returns:
             list: Players in the team
         """
-        return self.teams.get(team_name, [])
-
+        return self.teams.get(team_name, [])    
+    
+    def _normalize_team_name(self, team_name):
+        """
+        Normalize team names to handle variations
+        """
+        if not team_name:
+            return ""
+            
+        team_name = team_name.upper()
         
+        # Team name mappings
+        mappings = {
+            "MI": ["MUMBAI", "MUMBAI INDIANS"],
+            "CSK": ["CHENNAI", "CHENNAI SUPER KINGS"],
+            "RCB": ["BANGALORE", "ROYAL CHALLENGERS BANGALORE"],
+            "KKR": ["KOLKATA", "KOLKATA KNIGHT RIDERS"],
+            "DC": ["DELHI", "DELHI CAPITALS", "DELHI DAREDEVILS"],
+            "SRH": ["HYDERABAD", "SUNRISERS HYDERABAD"],
+            "PBKS": ["PUNJAB", "PUNJAB KINGS", "KINGS XI PUNJAB"],
+            "RR": ["RAJASTHAN", "RAJASTHAN ROYALS"],
+            "GT": ["GUJARAT", "GUJARAT TITANS"],
+            "LSG": ["LUCKNOW", "LUCKNOW SUPER GIANTS"]
+        }
+        
+        # Check if team_name matches any known variant
+        for canonical, variants in mappings.items():
+            if team_name in variants or canonical == team_name:
+                return canonical
+                
+        return team_name
+        
+    def _normalize_role(self, role):
+        """
+        Normalize player role names to standard categories
+        
+        Args:
+            role: Original role name
+            
+        Returns:
+            str: Normalized role name
+        """
+        role = role.lower()
+        
+        if "wicket" in role or "keeper" in role or "wk" in role:
+            return "Wicket-Keeper"
+        elif "bowl" in role:
+            return "Bowler"
+        elif "bat" in role:
+            return "Batsman"
+        elif "all" in role or "round" in role or "ar" in role:
+            return "All-Rounder"
+        else:
+            # Default to batsman if unknown
+            return "Batsman"
+    
+    def _determine_player_role(self, player_name):
+        """
+        Attempt to determine a player's role based on their name and available data
+        
+        Args:
+            player_name: Name of the player
+            
+        Returns:
+            str: Determined role (Batsman, Bowler, All-Rounder, or Wicket-Keeper)
+        """
+        # Initialize with unknown role
+        role = "Unknown"
+        
+        # Check if player is in batting data with high runs
+        if player_name in self.batting_stats:
+            batting = self.batting_stats[player_name]
+            matches = batting.get("matches", 0)
+            runs = batting.get("runs", 0)
+            
+            if matches > 0:
+                runs_per_match = runs / matches
+                
+                if runs_per_match > 30:
+                    role = "Batsman"
+                
+        # Check if player is in bowling data with good wickets
+        if player_name in self.bowling_stats:
+            bowling = self.bowling_stats[player_name]
+            matches = bowling.get("matches", 0)
+            wickets = bowling.get("wickets", 0)
+            
+            if matches > 0:
+                wickets_per_match = wickets / matches
+                
+                if wickets_per_match > 1.0:
+                    if role == "Batsman" and runs_per_match > 20:
+                        role = "All-Rounder"  # Good at both batting and bowling
+                    else:
+                        role = "Bowler"
+                        
+        # Look for wicket keeper indicators in name
+        wicketkeeper_keywords = ["dhoni", "pant", "karthik", "buttler", "de kock", "kishan", "rahul"]
+        if any(keyword in player_name.lower() for keyword in wicketkeeper_keywords):
+            role = "Wicket-Keeper"
+            
+        # If still unknown, default to batsman
+        if role == "Unknown":
+            role = "Batsman"
+            
+        return role
     def calculate_player_scores(self, team1, team2):
         """
         Calculate fantasy scores for all players in the two teams based on Dream11 scoring rules
@@ -335,6 +461,7 @@ class Dream11TeamPredictor:
             fantasy_points = 4.0
             
             # Calculate fantasy points from batting stats
+            batting_points = 0
             if player_name in self.batting_stats:
                 batting = self.batting_stats[player_name]
                 matches = batting.get("matches", 0)
@@ -344,45 +471,50 @@ class Dream11TeamPredictor:
                     avg_runs_per_match = runs / matches
                     
                     # Points for runs (1 per run)
-                    fantasy_points += avg_runs_per_match
+                    batting_points += avg_runs_per_match
                     
                     # Boundary bonus (estimated from average)
                     if avg_runs_per_match >= 20:
                         boundaries_estimate = avg_runs_per_match * 0.15  # ~15% of runs from boundaries
-                        fantasy_points += boundaries_estimate
+                        batting_points += boundaries_estimate
                         
                         # Six bonus (estimated)
                         sixes_estimate = avg_runs_per_match * 0.05  # ~5% of runs from sixes
-                        fantasy_points += sixes_estimate * 2  # 2 points per six
+                        batting_points += sixes_estimate * 2  # 2 points per six
                     
                     # Run milestone bonuses
-                    if avg_runs_per_match >= 25:
-                        fantasy_points += 4  # 25-run bonus
-                    if avg_runs_per_match >= 50:
-                        fantasy_points += 8  # Half-century bonus
-                    if avg_runs_per_match >= 75:
-                        fantasy_points += 12  # 75-run bonus
+                    milestone_points = 0
                     if avg_runs_per_match >= 100:
-                        fantasy_points += 16  # Century bonus (replacing lower bonuses)
-                        # No points for lower run milestones if century scored
-                        fantasy_points -= (4 + 8 + 12)
+                        milestone_points = 16  # Century bonus (replacing lower bonuses)
+                    elif avg_runs_per_match >= 75:
+                        milestone_points = 4 + 8 + 12  # All lower milestones
+                    elif avg_runs_per_match >= 50:
+                        milestone_points = 4 + 8  # 25-run and 50-run bonuses
+                    elif avg_runs_per_match >= 25:
+                        milestone_points = 4  # 25-run bonus
+                    
+                    batting_points += milestone_points
                     
                     # Strike rate impact
                     strike_rate = batting.get("strike_rate", 0)
                     if strike_rate > 170:
-                        fantasy_points += 6
+                        batting_points += 6
                     elif strike_rate > 150:
-                        fantasy_points += 4
+                        batting_points += 4
                     elif strike_rate > 130:
-                        fantasy_points += 2
+                        batting_points += 2
                     elif strike_rate < 70 and strike_rate >= 60:
-                        fantasy_points -= 2
+                        batting_points -= 2
                     elif strike_rate < 60 and strike_rate >= 50:
-                        fantasy_points -= 4
+                        batting_points -= 4
                     elif strike_rate < 50 and avg_runs_per_match >= 10:  # Only penalize if player actually batted
-                        fantasy_points -= 6
+                        batting_points -= 6
+            
+            # Add batting points to total
+            fantasy_points += batting_points
             
             # Calculate fantasy points from bowling stats
+            bowling_points = 0
             if player_name in self.bowling_stats:
                 bowling = self.bowling_stats[player_name]
                 matches = bowling.get("matches", 0)
@@ -392,19 +524,22 @@ class Dream11TeamPredictor:
                     avg_wickets_per_match = wickets / matches
                     
                     # Points for wickets (30 per wicket)
-                    fantasy_points += avg_wickets_per_match * 30
+                    bowling_points += avg_wickets_per_match * 30
                     
                     # LBW/Bowled bonus (estimated as 60% of wickets)
                     lbw_bowled_estimate = avg_wickets_per_match * 0.6
-                    fantasy_points += lbw_bowled_estimate * 8
+                    bowling_points += lbw_bowled_estimate * 8
                     
                     # Wicket milestone bonuses
-                    if avg_wickets_per_match >= 3:
-                        fantasy_points += 4  # 3-wicket bonus
-                    if avg_wickets_per_match >= 4:
-                        fantasy_points += 8  # 4-wicket bonus
+                    wicket_milestone_points = 0
                     if avg_wickets_per_match >= 5:
-                        fantasy_points += 12  # 5-wicket bonus
+                        wicket_milestone_points = 4 + 8 + 12  # All wicket bonuses
+                    elif avg_wickets_per_match >= 4:
+                        wicket_milestone_points = 4 + 8  # 3 and 4 wicket bonuses
+                    elif avg_wickets_per_match >= 3:
+                        wicket_milestone_points = 4  # 3-wicket bonus
+                        
+                    bowling_points += wicket_milestone_points
                     
                     # Dot ball points (estimated)
                     overs_per_match = 4  # Assuming T20 format
@@ -412,26 +547,31 @@ class Dream11TeamPredictor:
                     dots_per_over = (6 - economy) if economy < 6 else (6 - economy) * 0.5
                     if dots_per_over > 0:
                         total_dots = dots_per_over * overs_per_match
-                        fantasy_points += total_dots  # 1 point per dot ball
+                        bowling_points += total_dots  # 1 point per dot ball
                     
                     # Maiden over bonus
                     if economy < 4:
-                        fantasy_points += 12 * 0.2  # ~20% chance of a maiden per match for economical bowlers
+                        bowling_points += 12 * 0.2  # ~20% chance of a maiden per match for economical bowlers
                     
                     # Economy rate impact
                     if economy < 5:
-                        fantasy_points += 6
+                        bowling_points += 6
                     elif economy < 6:
-                        fantasy_points += 4
+                        bowling_points += 4
                     elif economy < 7:
-                        fantasy_points += 2
+                        bowling_points += 2
                     elif economy > 10 and economy <= 11:
-                        fantasy_points -= 2
+                        bowling_points -= 2
                     elif economy > 11 and economy <= 12:
-                        fantasy_points -= 4
+                        bowling_points -= 4
                     elif economy > 12:
-                        fantasy_points -= 6
-              # Add fielding points (estimated)
+                        bowling_points -= 6
+            
+            # Add bowling points to total            
+            fantasy_points += bowling_points
+            
+            # Add fielding points (estimated)
+            fielding_points = 0
             matches = max(
                 self.batting_stats.get(player_name, {}).get("matches", 0),
                 self.bowling_stats.get(player_name, {}).get("matches", 0)
@@ -446,23 +586,26 @@ class Dream11TeamPredictor:
                 else:
                     catches_per_match = 0.8  # Batsmen and all-rounders
                 
-                fantasy_points += catches_per_match * 8
+                fielding_points += catches_per_match * 8
                 
                 # 3 catch bonus (less common)
                 three_catch_chance = 0.05  # 5% chance per match
-                fantasy_points += three_catch_chance * 4
+                fielding_points += three_catch_chance * 4
                 
                 # Stumping points (wicket-keepers only)
                 if player_role == "Wicket-Keeper":
                     stumpings_per_match = 0.3
-                    fantasy_points += stumpings_per_match * 12
+                    fielding_points += stumpings_per_match * 12
                 
                 # Run-out points
                 direct_runout_per_match = 0.1
-                fantasy_points += direct_runout_per_match * 12  # Direct hit
+                fielding_points += direct_runout_per_match * 12  # Direct hit
                 
                 indirect_runout_per_match = 0.15
-                fantasy_points += indirect_runout_per_match * 6  # Not direct hit
+                fielding_points += indirect_runout_per_match * 6  # Not direct hit
+            
+            # Add fielding points to total
+            fantasy_points += fielding_points
             
             # Form adjustment based on recent performance (simulated)
             # In a real implementation, this would use recent match data
@@ -476,12 +619,14 @@ class Dream11TeamPredictor:
             
             player_scores[player_name] = {
                 "fantasy_points": fantasy_points,
-                "player": player
+                "player": player,
+                "batting_points": batting_points,
+                "bowling_points": bowling_points,
+                "fielding_points": fielding_points
             }
                 
         return player_scores
-    
-def predict_team(self, team1, team2, budget=100, team_size=11):
+    def predict_team(self, team1, team2, budget=100, team_size=11):
         """
         Predict the best Dream11 team for a match between team1 and team2
         
@@ -494,6 +639,9 @@ def predict_team(self, team1, team2, budget=100, team_size=11):
         Returns:
             dict: Selected team and metadata
         """
+        # Ensure team names are standardized
+        team1 = self._normalize_team_name(team1)
+        team2 = self._normalize_team_name(team2)
         logging.info(f"Predicting team for match between {team1} and {team2}")
         
         if team1 not in self.teams:
@@ -503,11 +651,10 @@ def predict_team(self, team1, team2, budget=100, team_size=11):
             
         # Calculate scores for all players
         player_scores = self.calculate_player_scores(team1, team2)
-        
-        # Sort players by score
+          # Sort players by score
         sorted_players = sorted(
             player_scores.items(),
-            key=lambda item: item[1]["score"],
+            key=lambda item: item[1]["fantasy_points"],
             reverse=True
         )
         
@@ -573,9 +720,8 @@ def predict_team(self, team1, team2, budget=100, team_size=11):
             team_roles["All-Rounder"] < min_all_rounders or
             team_roles["Wicket Keeper"] < min_wicket_keepers):
             logging.warning("Could not satisfy minimum role requirements")
-            
-        # Calculate team score
-        team_score = sum(player_scores[p["name"]]["score"] for p in selected_team)
+              # Calculate team score
+        team_score = sum(player_scores[p["name"]]["fantasy_points"] for p in selected_team)
         
         result = {
             "team": selected_team,
@@ -587,3 +733,101 @@ def predict_team(self, team1, team2, budget=100, team_size=11):
         }
         
         return result
+
+# Module-level functions for use in the Django application
+
+# Global predictor instance
+_predictor = None
+
+def get_predictor():
+    """
+    Get or create the predictor instance
+    """
+    global _predictor
+    if _predictor is None:
+        _predictor = Dream11TeamPredictor()
+    return _predictor
+
+def load_player_data(data_dir='data/IPL-DATASET'):
+    """
+    Load player data from CSV files
+    
+    Args:
+        data_dir: Path to data directory containing CSV files
+        
+    Returns:
+        int: Number of players loaded
+    """
+    predictor = get_predictor()
+    predictor._load_batting_stats_csv()
+    predictor._load_bowling_stats_csv()
+    
+    # Count players by combining batting and bowling statistics
+    total_players = len(set(list(predictor.batting_stats.keys()) + list(predictor.bowling_stats.keys())))
+    return total_players
+
+def load_match_data(data_dir='data/IPL-DATASET'):
+    """
+    Load match data from CSV files
+    
+    Args:
+        data_dir: Path to data directory containing CSV files
+        
+    Returns:
+        int: Number of matches loaded
+    """
+    predictor = get_predictor()
+    predictor._load_team_data_csv()
+    
+    # Count the total number of teams loaded
+    total_teams = len(predictor.teams)
+    return total_teams
+
+def update_player_data(data_dir='data/IPL-DATASET'):
+    """
+    Update player data from CSV files
+    
+    Args:
+        data_dir: Path to data directory containing CSV files
+        
+    Returns:
+        int: Number of players updated
+    """
+    # For now, just reload all data
+    predictor = get_predictor()
+    
+    # Reset data
+    predictor.teams = {}
+    predictor.batting_stats = {}
+    predictor.bowling_stats = {}
+    
+    # Reload all data
+    players_loaded = load_player_data(data_dir)
+    load_match_data(data_dir)
+    
+    return players_loaded
+
+def predict_team(team1_name, team2_name, venue_name=None, budget=100, team_size=11, update_data=False):
+    """
+    Predict the best Dream11 team for a match
+    
+    Args:
+        team1_name: Name of the first team
+        team2_name: Name of the second team
+        venue_name: Name of the venue (optional)
+        budget: Total budget for creating the team (in crores)
+        team_size: Number of players in the team
+        update_data: Whether to update data before prediction
+        
+    Returns:
+        dict: Selected team and metadata
+    """
+    predictor = get_predictor()
+    
+    # Load data if needed
+    if update_data:
+        predictor.update_player_data()
+        predictor.load_match_data()
+    
+    # Predict team
+    return predictor.predict_team(team1_name, team2_name, budget, team_size)

@@ -50,60 +50,73 @@ class Player(models.Model):
     opposition_performance = models.JSONField(null=True, blank=True)  # Performance against teams
     
     def __str__(self):
-        return f"{self.name} ({self.team.short_name})"
+        return f"{self.name} ({self.get_role_display()}) - {self.team.name}"
 
-class Prediction(models.Model):
-    PITCH_CHOICES = (
-        ('BAT', 'Batting-friendly'),
-        ('BWL', 'Bowling-friendly'),
-        ('BAL', 'Balanced'),
-        ('SPIN', 'Spin-friendly'),
-    )
-    
-    PREDICTION_TYPE = (
-        ('AGG', 'Aggressive'),
-        ('BAL', 'Balanced'),
-        ('RISK', 'Risk-averse'),
-    )
-    
+class PredictionHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='predictions')
     team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1_predictions')
     team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2_predictions')
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
-    pitch_type = models.CharField(max_length=4, choices=PITCH_CHOICES)
-    prediction_type = models.CharField(max_length=4, choices=PREDICTION_TYPE)
+    result = models.JSONField()  # Store the prediction result as JSON
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.team1.short_name} vs {self.team2.short_name} - {self.get_prediction_type_display()}"
+        return f"Prediction: {self.team1.name} vs {self.team2.name} by {self.user.username}"
+        
+    class Meta:
+        verbose_name_plural = "Prediction histories"
+        ordering = ['-created_at']
+
+class Prediction(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_predictions')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1_user_predictions')
+    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2_user_predictions')
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, related_name='predictions')
+    match_date = models.DateTimeField()
+    is_public = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.team1.name} vs {self.team2.name}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 class PredictionPlayer(models.Model):
     prediction = models.ForeignKey(Prediction, on_delete=models.CASCADE, related_name='players')
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    is_captain = models.BooleanField(default=False)
-    is_vice_captain = models.BooleanField(default=False)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='prediction_selections')
+    captain = models.BooleanField(default=False)
+    vice_captain = models.BooleanField(default=False)
     expected_points = models.FloatField(default=0.0)
     
     def __str__(self):
-        return f"{self.player.name} - {self.prediction}"
+        return f"{self.player.name} in {self.prediction.title}"
+    
+    class Meta:
+        unique_together = ('prediction', 'player')
 
 class PlayerComment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='player_comments')
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='comments')
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.player.name}"
+        return f"Comment on {self.player.name} by {self.user.username}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 class PredictionLike(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='prediction_likes')
     prediction = models.ForeignKey(Prediction, on_delete=models.CASCADE, related_name='likes')
-    is_like = models.BooleanField(default=True)  # True for like, False for dislike
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Like on {self.prediction.title} by {self.user.username}"
     
     class Meta:
         unique_together = ('user', 'prediction')
-    
-    def __str__(self):
-        return f"{self.user.username} {'liked' if self.is_like else 'disliked'} {self.prediction}"

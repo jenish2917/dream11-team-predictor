@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getPlayerDetails } from '../services/predictorService';
+import { predictionService } from '../services/predictionService'; // Updated import
 
 const PlayerDetailsPage = () => {
   const { playerName } = useParams();
@@ -12,7 +12,7 @@ const PlayerDetailsPage = () => {
     const fetchPlayerDetails = async () => {
       try {
         setLoading(true);
-        const details = await getPlayerDetails(playerName);
+        const details = await predictionService.getPlayerDetails(playerName); // Use predictionService
         setPlayer(details);
         setLoading(false);
       } catch (err) {

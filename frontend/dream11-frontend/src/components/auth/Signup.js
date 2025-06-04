@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/api';
 
-const Signup = () => {
-  const [formData, setFormData] = useState({
-    name: '',
+const Signup = () => {  const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -29,16 +28,20 @@ const Signup = () => {
     }
     
     setIsLoading(true);
-    
-    try {
-      await authService.register({
-        username: formData.name,
+      try {
+      const response = await authService.register({
+        username: formData.username,
         email: formData.email,
-        password: formData.password,
-        password2: formData.confirmPassword,
-        first_name: formData.name.split(' ')[0],
-        last_name: formData.name.split(' ').slice(1).join(' ') || ''
+        password: formData.password
       });
+      
+      // If we get tokens directly, navigate to dashboard
+      if (response && response.access && response.refresh) {
+        window.localStorage.setItem('access_token', response.access);
+        window.localStorage.setItem('refresh_token', response.refresh);
+        navigate('/dashboard');
+        return;
+      }
       
       // Redirect to login after successful signup
       navigate('/login', { 
@@ -70,19 +73,18 @@ const Signup = () => {
         )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="name" className="sr-only">Full Name</label>
+          <div className="rounded-md shadow-sm -space-y-px">            <div>
+              <label htmlFor="username" className="sr-only">Username</label>
               <input
-                id="name"
-                name="name"
+                id="username"
+                name="username"
                 type="text"
-                autoComplete="name"
+                autoComplete="username"
                 required
-                value={formData.name}
+                value={formData.username}
                 onChange={handleChange}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
-                placeholder="Full Name"
+                placeholder="Username"
               />
             </div>
             <div>

@@ -4,44 +4,45 @@ import axios from 'axios';
 const API_URL = 'http://localhost:8000/api';
 
 // Auth Service Object
-export const authService = {
-  // Login user
+export const authService = {  // Login user
   login: async (credentials) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/login/`, credentials);
+      const response = await axios.post(`${API_URL}/login/`, credentials);
       
       if (response.data.access) {
         // Store JWT tokens in localStorage
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
+        console.log("Login successful, tokens stored");
+      } else {
+        console.error("Login response missing tokens:", response.data);
       }
       
       return response.data;
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Login failed:", error.response?.data || error.message);
       throw error;
     }
   },
-  
-  // Register new user
+    // Register new user
   register: async (userData) => {
     try {
-      const response = await axios.post(`${API_URL}/auth/register/`, userData);
+      const response = await axios.post(`${API_URL}/register/`, userData);
       
       if (response.data.access) {
         // Store JWT tokens in localStorage
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
+        console.log("Registration successful, tokens stored");
       }
       
       return response.data;
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error("Registration failed:", error.response?.data || error.message);
       throw error;
     }
   },
-  
-  // Refresh access token using refresh token
+    // Refresh access token using refresh token
   refreshToken: async () => {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
@@ -51,7 +52,7 @@ export const authService = {
       }
       
       const response = await axios.post(
-        `${API_URL}/auth/token/refresh/`, 
+        `${API_URL}/token/refresh/`, 
         { refresh: refreshToken },
         { skipAuthRefresh: true } // Skip auth interceptor for this call
       );

@@ -19,21 +19,19 @@ urlpatterns = [
     
     # API endpoints
     path('', include(router.urls)),
-    path('predict-team/', views.predict_team, name='predict-team'),
+    path('predict/team/', views.predict_team, name='predict-team'),
+    path('load/csv-data/', views.load_csv_data, name='load-csv-data'),
       # ESPNCricinfo integration endpoints
     path('scrape/match/<str:match_id>/', views.scrape_match, name='scrape-match'),
     path('scrape/player/<str:player_id>/', views.scrape_player, name='scrape-player'),
     path('scrape/season/<int:year>/', views.scrape_season, name='scrape-season'),
     path('update-stats/', views.update_player_stats, name='update-player-stats'),
       # Enhanced player statistics endpoints
-    path('enhance-player-stats/', views.enhance_player_stats, name='enhance-player-stats'),    path('predict-player-performance/', views.predict_player_performance, name='predict-player-performance'),
+    path('enhance-player-stats/', views.enhance_player_stats, name='enhance-player-stats'),
+    path('predict/player-performance/', views.predict_player_performance, name='predict-player-performance'),
 ]
-
-# Import prediction views for ML functionality
-from .prediction_views import predict_player_performance
 
 # Add additional API endpoints
-urlpatterns += [
-    path('api/predict-player-performance/', predict_player_performance, name='predict-player-ml'),
-]
+# urlpatterns += [
+# ] # Removed redundant/unused paths
 
