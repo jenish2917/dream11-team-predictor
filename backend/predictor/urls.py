@@ -1,37 +1,18 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from . import views
-
-router = DefaultRouter()
-router.register(r'teams', views.TeamViewSet)
-router.register(r'venues', views.VenueViewSet)
-router.register(r'players', views.PlayerViewSet)
-router.register(r'predictions', views.PredictionViewSet, basename='prediction')
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import *  # Import all views from the current modul
 
 urlpatterns = [
-    # Authentication
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user/profile/', views.UserProfileView.as_view(), name='user-profile'),
+    path('register/', views.RegisterView.view(), name='register'),
+    path('login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     
-    # API endpoints
-    path('', include(router.urls)),
+    path('user/profile/', views.UserProfileView.as_view(), name='user-profile'),
+
+    path('status/', views.api_status, name='api-status'),
     path('predict/team/', views.predict_team, name='predict-team'),
     path('load/csv-data/', views.load_csv_data, name='load-csv-data'),
-      # ESPNCricinfo integration endpoints
-    path('scrape/match/<str:match_id>/', views.scrape_match, name='scrape-match'),
-    path('scrape/player/<str:player_id>/', views.scrape_player, name='scrape-player'),
-    path('scrape/season/<int:year>/', views.scrape_season, name='scrape-season'),
-    path('update-stats/', views.update_player_stats, name='update-player-stats'),
-      # Enhanced player statistics endpoints
-    path('enhance-player-stats/', views.enhance_player_stats, name='enhance-player-stats'),
     path('predict/player-performance/', views.predict_player_performance, name='predict-player-performance'),
+   
 ]
-
-# Add additional API endpoints
-# urlpatterns += [
-# ] # Removed redundant/unused paths
 

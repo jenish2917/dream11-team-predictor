@@ -1,5 +1,13 @@
+"""
+Dream11 Team Predictor - Consolidated Views
+
+This module contains all API views for the Dream11 team prediction application.
+Combines authentication, team/player management, and prediction functionality.
+"""
+
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.conf import settings
 from django.core.management import call_command
 from rest_framework import viewsets, permissions, status, generics
@@ -7,9 +15,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-
-# Import prediction views
-from .prediction_views import predict_player_performance
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import (
     UserProfile, Team, Venue, Player, 
@@ -19,34 +25,22 @@ from .serializers import (
     UserSerializer, UserProfileSerializer, TeamSerializer, 
     VenueSerializer, PlayerSerializer, PlayerDetailSerializer,
     PredictionSerializer, PredictionDetailSerializer,
-    PredictionPlayerSerializer, PlayerCommentSerializer,
-    PredictionLikeSerializer, UserRegistrationSerializer
+    PlayerCommentSerializer,UserRegistrationSerializer
 )
+from .logic.prediction import predict_team as predict_team_logic, load_player_data, load_match_data, update_player_data
 
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-import matplotlib.pyplot as plt
-import seaborn as sns
-from io import BytesIO
-import base64
 import os
 import logging
 from datetime import datetime, timedelta
 
-# Import scraper and stats update tools
-try:
-    from .management.commands.scrape_cricinfo import ESPNCricinfoScraper
-    from .management.commands.update_stats import Command as UpdateStatsCommand
-except ImportError:
-    logging.error("Failed to import ESPNCricinfo scraper or stats update command")
+# Configure logging
+logger = logging.getLogger(__name__)
 
-# Configuration for scraper integration
-SCRAPER_ENABLED = True
-DEFAULT_SCRAPER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'management', 'commands')
+# Feature flags
+SCRAPER_ENABLED = False  # No scraping functionality - using preprocessed data only
 
 
-# Authentication Views
+# ===== AUTHENTICATION VIEWS =====
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -58,12 +52,39 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         
         refresh = RefreshToken.for_user(user)
-        
         return Response({
             'user': UserSerializer(user).data,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         })
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom token obtain view that allows login with email or username
+    """
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if username and password:
+            # Use Django's authenticate function which will use our custom backend
+            user = authenticate(request, username=username, password=password)
+            if user:
+                # Create tokens for the authenticated user
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user': UserSerializer(user).data,
+                })
+            else:
+                return Response({
+                    'detail': 'Invalid credentials'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Fallback to default behavior
+        return super().post(request, *args, **kwargs)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -74,11 +95,11 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return get_object_or_404(UserProfile, user=self.request.user)
 
 
-# Team and Venue Views
+# ===== TEAM AND VENUE VIEWS =====
 class TeamViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow public access for demo
 
     @action(detail=True, methods=['get'])
     def players(self, request, pk=None):
@@ -91,13 +112,13 @@ class TeamViewSet(viewsets.ReadOnlyModelViewSet):
 class VenueViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Venue.objects.all()
     serializer_class = VenueSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow public access for demo
 
 
-# Player Views
+# ===== PLAYER VIEWS =====
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Player.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow public access for demo
     
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -324,11 +345,10 @@ class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
             logging.error(f"Error in performance_chart: {str(e)}")
             return Response(
                 {"error": f"Failed to generate performance chart: {str(e)}"}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR            )
 
 
-# Prediction Views
+# ===== PREDICTION VIEWS =====
 class PredictionViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -336,7 +356,6 @@ class PredictionViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return Prediction.objects.filter(user=self.request.user).order_by('-created_at')
         return Prediction.objects.all()
-    
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return PredictionDetailSerializer
@@ -376,16 +395,90 @@ class PredictionViewSet(viewsets.ModelViewSet):
         return Response({'status': 'prediction disliked'})
 
 
-# Prediction API
+# ===== MAIN PREDICTION API =====
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_status(request):
+    """
+    Simple API status endpoint for testing connectivity.
+    """
+    return Response({
+        "status": "success",
+        "message": "Dream11 Team Predictor API is running",
+        "version": "1.0.0",
+        "endpoints": {
+            "teams": "/api/teams/",
+            "venues": "/api/venues/",
+            "players": "/api/players/",
+            "predict_team": "/api/predict/team/",
+            "load_data": "/api/load/csv-data/",
+            "register": "/api/register/",
+            "login": "/api/login/"
+        }
+    })
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def predict_player_performance(request):
+    """
+    Predict player performance and return results.
+    Consolidated endpoint for player-level predictions.
+    """
+    try:
+        # Get input parameters from request
+        team1_id = request.data.get('team1')
+        team2_id = request.data.get('team2')
+        venue_id = request.data.get('venue')
+        
+        # Validate input
+        if not all([team1_id, team2_id, venue_id]):
+            return Response(
+                {"error": "Missing required parameters: team1, team2, and venue are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get team and venue objects
+        try:
+            team1 = Team.objects.get(id=team1_id)
+            team2 = Team.objects.get(id=team2_id)
+            venue = Venue.objects.get(id=venue_id)
+        except (Team.DoesNotExist, Venue.DoesNotExist) as e:
+            return Response(
+                {"error": f"Object not found: {str(e)}"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Make predictions using the logic module
+        prediction_results = predict_team_logic(
+            team1_name=team1.name,
+            team2_name=team2.name,
+            venue_name=venue.name,
+            update_data=False  # Don't force data update every prediction
+        )
+        
+        return Response(prediction_results, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error in predict_player_performance: {str(e)}")
+        return Response(
+            {"error": f"Prediction failed: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow public access for demo
 def predict_team(request):
     """
     API endpoint that predicts Dream11 teams based on input parameters.
     
     Parameters:
-    - team1: Name of the first team
-    - team2: Name of the second team
+    - team1: ID or name of the first team
+    - team2: ID or name of the second team
+    - venue: Venue ID or name (optional)
+    - pitchCondition: Pitch condition (optional)
+    - date: Match date (optional)
     - budget: Total budget in crores (optional, default: 100)
     
     Returns:
@@ -395,6 +488,9 @@ def predict_team(request):
         # Extract parameters
         team1_raw = request.data.get('team1')
         team2_raw = request.data.get('team2')
+        venue_raw = request.data.get('venue')
+        pitch_condition = request.data.get('pitchCondition')
+        match_date = request.data.get('date')
         
         # Normalise to string for later comparisons
         team1_name, team2_name = str(team1_raw).strip(), str(team2_raw).strip()
@@ -434,8 +530,7 @@ def predict_team(request):
                 team2 = Team.objects.get(name__iexact=team2_name)
             except Team.DoesNotExist:
                 pass
-        
-        # Use direct prediction from our logic module if teams not in database
+          # Use direct prediction from our logic module if teams not in database
         if not team1 or not team2:
             # Use the prediction logic directly
             from .logic.prediction import Dream11TeamPredictor
@@ -446,10 +541,20 @@ def predict_team(request):
             
             # Make prediction
             team_prediction = predictor.predict_team(team1_name, team2_name, budget=budget)
+              # Create a prediction record for tracking
+            prediction = Prediction.objects.create(
+                user=request.user if request.user.is_authenticated else None,
+                team1_name=team1_name,
+                team2_name=team2_name,
+                venue_name=venue_raw if venue_raw else '',
+                prediction_type=pitch_condition if pitch_condition else 'BAL',
+                match_date=match_date if match_date else None
+            )
             
             # Format for response
             response_data = {
-                "message": "Prediction successful using direct prediction logic",
+                "id": prediction.id,
+                "message": "Prediction successful",
                 "prediction": {
                     "team": [
                         {
@@ -474,10 +579,9 @@ def predict_team(request):
         team1_players = Player.objects.filter(team=team1)
         team2_players = Player.objects.filter(team=team2)
         all_players = list(team1_players) + list(team2_players)
-        
-        # Create a new prediction record
+          # Create a new prediction record
         prediction = Prediction.objects.create(
-            user=request.user,
+            user=request.user if request.user.is_authenticated else None,
             team1=team1,
             team2=team2,
             prediction_type='BAL'  # Balanced prediction
@@ -693,404 +797,47 @@ def generate_mock_graphs(team1, team2):
     }
 
 
-# ESPNCricinfo Scraper API Views
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def scrape_match(request, match_id):
-    """
-    Scrape a specific match by its Cricinfo ID or URL.
-    
-    Args:
-        match_id: The Cricinfo match ID or a full URL
-    
-    Returns:
-        Response with match details or error
-    """
-    if not SCRAPER_ENABLED:
-        return Response(
-            {"error": "Scraper functionality is disabled"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
-    
-    try:
-        # Initialize scraper
-        scraper = ESPNCricinfoScraper(base_dir=DEFAULT_SCRAPER_DIR)
-        
-        # Check if input is a full URL or just an ID
-        if match_id.startswith('http'):
-            match_url = match_id
-        else:
-            match_url = f"https://www.espncricinfo.com/matches/engine/match/{match_id}.html"
-        
-        # Scrape match data
-        batting_df, bowling_df = scraper.scrape_match_scorecard(match_url)
-        
-        if batting_df.empty and bowling_df.empty:
-            return Response(
-                {"error": "Failed to scrape match data"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        # Process the result
-        result = {
-            "match_id": match_id,
-            "url": match_url,
-            "batting_performances": len(batting_df),
-            "bowling_performances": len(bowling_df),
-            "teams": list(batting_df['team'].unique()) if not batting_df.empty else [],
-            "top_scorer": batting_df.loc[batting_df['runs'].idxmax()]['player_name'] if not batting_df.empty else None,
-            "top_wicket_taker": bowling_df.loc[bowling_df['wickets'].idxmax()]['player_name'] if not bowling_df.empty else None,
-        }
-        
-        # Check if we should update player stats
-        update_stats = request.data.get('update_stats', False)
-        if update_stats:
-            # Import to Django DB
-            success = scraper.import_data_to_django()
-            result["data_imported"] = success
-            
-            if success:
-                # Update player stats
-                update_command = UpdateStatsCommand()
-                update_command.handle(dry_run=False, days=90)
-                result["player_stats_updated"] = True
-        
-        return Response(result)
-    
-    except Exception as e:
-        logging.error(f"Error in scrape_match view: {str(e)}")
-        return Response(
-            {"error": f"An error occurred: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def scrape_player(request, player_id):
-    """
-    Scrape a specific player's profile by their Cricinfo ID.
-    
-    Args:
-        player_id: The Cricinfo player ID
-    
-    Returns:
-        Response with player details or error
-    """
-    if not SCRAPER_ENABLED:
-        return Response(
-            {"error": "Scraper functionality is disabled"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
-    
-    try:
-        # Initialize scraper
-        scraper = ESPNCricinfoScraper(base_dir=DEFAULT_SCRAPER_DIR)
-        
-        # Scrape player data
-        player_data = scraper.scrape_player_profile(player_id)
-        
-        if not player_data:
-            return Response(
-                {"error": "Failed to scrape player data"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        # Check if we should update player stats
-        update_stats = request.data.get('update_stats', False)
-        if update_stats:
-            # Import to Django DB
-            success = scraper.import_data_to_django()
-            player_data["data_imported"] = success
-        
-        return Response(player_data)
-    
-    except Exception as e:
-        logging.error(f"Error in scrape_player view: {str(e)}")
-        return Response(
-            {"error": f"An error occurred: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def scrape_season(request, year):
-    """
-    Scrape all matches for a specific IPL season.
-    
-    Args:
-        year: The year of the IPL season
-    
-    Returns:
-        Response with season details or error
-    """
-    if not SCRAPER_ENABLED:
-        return Response(
-            {"error": "Scraper functionality is disabled"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
-    
-    try:
-        # Initialize scraper
-        scraper = ESPNCricinfoScraper(base_dir=DEFAULT_SCRAPER_DIR)
-        
-        # Get custom series ID if provided
-        series_id = request.data.get('series_id', None)
-        
-        # Scrape season matches
-        matches_df = scraper.scrape_ipl_matches(year, series_id)
-        
-        if matches_df.empty:
-            return Response(
-                {"error": f"Failed to scrape matches for IPL {year}"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        # Process the result
-        result = {
-            "season": year,
-            "matches_found": len(matches_df),
-            "series_id": series_id,
-            "teams": list(set(list(matches_df['team1'].unique()) + list(matches_df['team2'].unique()))),
-            "venues": list(matches_df['venue'].unique()),
-        }
-        
-        # Check if we should also scrape match details
-        scrape_matches = request.data.get('scrape_matches', False)
-        if scrape_matches:
-            result["match_details_scraped"] = 0
-            
-            # Limit to first 5 matches if there are many
-            max_matches = min(5, len(matches_df)) if request.data.get('limit_matches', True) else len(matches_df)
-            
-            for i in range(max_matches):
-                match_url = matches_df.iloc[i]['match_url']
-                batting_df, bowling_df = scraper.scrape_match_scorecard(match_url)
-                
-                if not batting_df.empty or not bowling_df.empty:
-                    result["match_details_scraped"] += 1
-        
-        # Check if we should update player stats
-        update_stats = request.data.get('update_stats', False)
-        if update_stats:
-            # Import to Django DB
-            success = scraper.import_data_to_django()
-            result["data_imported"] = success
-            
-            if success:
-                # Update player stats
-                update_command = UpdateStatsCommand()
-                update_command.handle(dry_run=False, days=90)
-                result["player_stats_updated"] = True
-        
-        return Response(result)
-    
-    except Exception as e:
-        logging.error(f"Error in scrape_season view: {str(e)}")
-        return Response(
-            {"error": f"An error occurred: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+# Removed all ESPNCricinfo Scraper API Views (scrape_match, scrape_player, scrape_season)
+# The application now relies solely on preloaded CSV data
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_player_stats(request):
     """
-    Update player statistics based on scraped data.
+    Update player statistics based on CSV data.
+    This endpoint is kept for compatibility but performs the same function as load_csv_data.
     
     Args:
-        request: May contain 'dry_run' and 'days' parameters
+        request: Not used
     
     Returns:
-        Response with update results or error
+        Response with status message
     """
-    if not SCRAPER_ENABLED:
-        return Response(
-            {"error": "Scraper functionality is disabled"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
-    
-    try:
-        # Get parameters
-        dry_run = request.data.get('dry_run', False)
-        days = request.data.get('days', 90)
-        
-        # Update player stats
-        update_command = UpdateStatsCommand()
-        
-        # Use internal tracking to get stats before and after
-        players_before = {}
-        for player in Player.objects.all():
-            players_before[player.id] = {
-                'name': player.name,
-                'batting_average': player.batting_average,
-                'bowling_average': player.bowling_average,
-                'recent_form': player.recent_form
-            }
-        
-        # Run the update
-        updated_count = update_command.handle(dry_run=dry_run, days=days)
-        
-        # Get stats after update
-        players_after = {}
-        changes = []
-        
-        for player in Player.objects.all():
-            players_after[player.id] = {
-                'name': player.name,
-                'batting_average': player.batting_average,
-                'bowling_average': player.bowling_average,
-                'recent_form': player.recent_form
-            }
-            
-            # Check for changes
-            if player.id in players_before:
-                before = players_before[player.id]
-                change = {}
-                
-                for stat in ['batting_average', 'bowling_average', 'recent_form']:
-                    if before[stat] != players_after[player.id][stat]:
-                        change[f'old_{stat}'] = before[stat]
-                        change[f'new_{stat}'] = players_after[player.id][stat]
-                
-                if change:
-                    change['player_id'] = player.id
-                    change['player_name'] = player.name
-                    changes.append(change)
-        
-        result = {
-            "dry_run": dry_run,
-            "days_considered": days,
-            "players_updated": len(changes),
-            "updated_players": changes[:10] if changes else []  # Limit to first 10 for brevity
-        }
-        
-        if len(changes) > 10:
-            result["note"] = f"Showing only the first 10 of {len(changes)} updated players"
-        
-        return Response(result)
-    
-    except Exception as e:
-        logging.error(f"Error in update_player_stats view: {str(e)}")
-        return Response(
-            {"error": f"An error occurred: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    return Response(
+        {"message": "Player stats update from external sources is disabled. Please use CSV data loading instead."},
+        status=status.HTTP_200_OK
+    )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def enhance_player_stats(request):
     """
     Process player statistics to generate enhanced metrics.
+    This endpoint is kept for compatibility but is disabled.
     
     Args:
-        request: May contain 'player', 'dry_run', and 'export_format' parameters
+        request: Not used
     
     Returns:
-        Response with enhancement results or error
+        Response with status message
     """
-    if not SCRAPER_ENABLED:
-        return Response(
-            {"error": "Stats enhancement is disabled"},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE
-        )
-    
-    try:
-        # Import player stats processor
-        from .management.commands.process_player_stats import PlayerStatsProcessor
-        from django.core.management import call_command
-        
-        # Get parameters
-        player_name = request.data.get('player', None)
-        dry_run = request.data.get('dry_run', True)
-        export_format = request.data.get('export_format', 'json')
-        generate_plots = request.data.get('generate_plots', False)
-        
-        # Initialize processor
-        data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'management', 'commands', 'cricket_data')
-        processor = PlayerStatsProcessor(data_dir)
-        
-        # Load and clean data
-        success = processor.load_data()
-        if not success:
-            return Response(
-                {"error": "Failed to load player data. Ensure scraped data exists."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        processor.clean_data()
-        
-        # Process data based on request
-        result = {
-            "status": "success",
-            "dry_run": dry_run,
-            "generated_files": []
-        }
-        
-        # Process specific player if requested
-        if player_name:
-            profile = processor.player_profile(player_name)
-            result["player"] = player_name
-            result["profile"] = profile
-            
-            # Generate plots if requested
-            if generate_plots:
-                form_plot = processor.plot_recent_form(player_name)
-                if form_plot:
-                    result["generated_files"].append({"type": "form_plot", "path": form_plot})
-                
-                opposition_plot = processor.plot_opposition_performance(player_name)
-                if opposition_plot:
-                    result["generated_files"].append({"type": "opposition_plot", "path": opposition_plot})
-        
-        else:
-            # Export profiles in requested format
-            if export_format in ['json', 'both']:
-                json_path = processor.export_player_profiles('json')
-                if json_path:
-                    result["generated_files"].append({"type": "json_profiles", "path": json_path})
-            
-            if export_format in ['csv', 'both']:
-                csv_path = processor.export_player_profiles('csv')
-                if csv_path:
-                    result["generated_files"].append({"type": "csv_profiles", "path": csv_path})
-        
-            # Generate top player plots if requested
-            if generate_plots:
-                # Get top players by runs
-                top_players = []
-                if not processor.batting_df.empty and 'player_name' in processor.batting_df.columns:
-                    top_players = processor.batting_df.groupby('player_name')['runs'].sum().nlargest(5).index.tolist()
-                
-                plots_generated = []
-                for player in top_players:
-                    form_plot = processor.plot_recent_form(player)
-                    if form_plot:
-                        plots_generated.append({"player": player, "type": "form", "path": form_plot})
-                
-                result["top_player_plots"] = plots_generated
-        
-        # Update database if requested
-        if not dry_run:
-            # Use Django management command to update database
-            call_command('enhance_player_stats', 
-                        player=player_name,
-                        update_db=True,
-                        dry_run=False,
-                        verbosity=0)
-            
-            result["database_updated"] = True
-        
-        return Response(result)
-    
-    except Exception as e:
-        logging.error(f"Error in enhance_player_stats view: {str(e)}")
-        return Response(
-            {"error": f"An error occurred: {str(e)}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+    return Response(
+        {"message": "Stats enhancement is disabled. Using only CSV data."},
+        status=status.HTTP_200_OK
+    )
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])  # Allow public access for demo
 def load_csv_data(request):
     """
     Load data from all CSV files in the data directory.

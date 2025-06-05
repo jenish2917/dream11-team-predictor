@@ -67,19 +67,42 @@ class PredictionHistory(models.Model):
         ordering = ['-created_at']
 
 class Prediction(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_predictions')
-    title = models.CharField(max_length=255)
+    PREDICTION_TYPE_CHOICES = (
+        ('BAT', 'Batting Friendly'),
+        ('BWL', 'Bowling Friendly'),
+        ('BAL', 'Balanced'),
+        ('SPIN', 'Spin Friendly'),    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_predictions', null=True, blank=True)
+    title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
-    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1_user_predictions')
-    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2_user_predictions')
-    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, related_name='predictions')
-    match_date = models.DateTimeField()
+    team1 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team1_user_predictions', null=True, blank=True)
+    team2 = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='team2_user_predictions', null=True, blank=True)
+    # Fallback fields for when teams are not in database
+    team1_name = models.CharField(max_length=100, blank=True)
+    team2_name = models.CharField(max_length=100, blank=True)
+    venue = models.ForeignKey(Venue, on_delete=models.SET_NULL, null=True, blank=True, related_name='predictions')
+    venue_name = models.CharField(max_length=200, blank=True)
+    match_date = models.DateTimeField(null=True, blank=True)
+    prediction_type = models.CharField(max_length=4, choices=PREDICTION_TYPE_CHOICES, default='BAL')
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def get_team1_name(self):
+        return self.team1.name if self.team1 else self.team1_name
+    
+    def get_team2_name(self):
+        return self.team2.name if self.team2 else self.team2_name
+    
+    def get_venue_name(self):
+        return self.venue.name if self.venue else self.venue_name
+    
     def __str__(self):
-        return f"{self.title} - {self.team1.name} vs {self.team2.name}"
+        team1_name = self.get_team1_name()
+        team2_name = self.get_team2_name()
+        title = self.title or f"{team1_name} vs {team2_name}"
+        return title
     
     class Meta:
         ordering = ['-created_at']

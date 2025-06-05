@@ -9,7 +9,10 @@ import logging
 import csv
 import random
 import sys
+import time
+import json
 from pathlib import Path
+import functools
 
 # Configure basic logging
 logging.basicConfig(
@@ -25,6 +28,43 @@ try:
 except ImportError:
     HAS_DEPENDENCIES = False
     logging.warning("pandas and/or numpy not available. Using CSV reader fallback.")
+
+# Cache decorator for expensive operations
+def cached_result(expires_after=3600):  # Default cache expiry: 1 hour
+    """
+    Cache decorator for expensive operations
+    
+    Args:
+        expires_after: Cache expiry time in seconds
+    """
+    def decorator(func):
+        # Cache for storing results
+        cache = {}
+        
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # Create a cache key from function arguments
+            key = str(args) + str(sorted(kwargs.items()))
+            current_time = time.time()
+            
+            # Check if result is in cache and not expired
+            if key in cache and (current_time - cache[key]['timestamp']) < expires_after:
+                logging.debug(f"Using cached result for {func.__name__}")
+                return cache[key]['result']
+            
+            # Execute function and cache result
+            result = func(*args, **kwargs)
+            cache[key] = {
+                'result': result,
+                'timestamp': current_time
+            }
+            return result
+            
+        # Add function to clear the cache
+        wrapper.clear_cache = lambda: cache.clear()
+        return wrapper
+        
+    return decorator
 
 class Dream11TeamPredictor:
     """
@@ -68,6 +108,10 @@ class Dream11TeamPredictor:
         self.catches_data = None
         self.dismissals_data = None
         
+        # Stats dictionaries (initialized for CSV fallback)
+        self.batting_stats = {}
+        self.bowling_stats = {}
+        
         # Load all data
         self._load_all_data()
     
@@ -84,18 +128,19 @@ class Dream11TeamPredictor:
         """
         Load data using pandas
         """
-        try:
-            # Load batting data
+        try:            # Load batting data
             batting_path = self.data_folder_path / 'ipl data - most_runs.csv'
             if batting_path.exists():
                 self.batting_data = pd.read_csv(batting_path)
                 logging.info(f"Loaded batting data: {len(self.batting_data)} records")
+                self._process_batting_data_pandas()
             
             # Load bowling data
             bowling_path = self.data_folder_path / 'ipl data - most_wickets.csv'
             if bowling_path.exists():
                 self.bowling_data = pd.read_csv(bowling_path)
                 logging.info(f"Loaded bowling data: {len(self.bowling_data)} records")
+                self._process_bowling_data_pandas()
             
             # Load auction data
             auction_path = self.data_folder_path / 'ipl data - auction_2025.csv'
@@ -123,6 +168,10 @@ class Dream11TeamPredictor:
                 self.dismissals_data = pd.read_csv(dismissals_path)
                 logging.info(f"Loaded dismissals data: {len(self.dismissals_data)} records")
                 
+            # Process batting and bowling stats into dictionaries
+            self._process_batting_data_pandas()
+            self._process_bowling_data_pandas()
+            
         except Exception as e:
             logging.error(f"Error loading data with pandas: {str(e)}")
             # Fall back to CSV reader if pandas fails
@@ -143,6 +192,7 @@ class Dream11TeamPredictor:
         except Exception as e:
             logging.error(f"Error loading data with CSV: {str(e)}")
             raise
+    
     def _load_team_data_csv(self):
         """
         Load team data from the auction CSV file using standard csv module
@@ -293,7 +343,15 @@ class Dream11TeamPredictor:
                 if len(row) > 1 and pd.notna(row[1]):
                     player_name = row[1].strip()
                     player_role = row[2].strip() if len(row) > 2 and pd.notna(row[2]) else "Unknown"
-                    player_price = float(row[3]) if len(row) > 3 and pd.notna(row[3]) else 0.0
+                    
+                    # Handle price parsing with currency symbols
+                    price_str = str(row[3]) if len(row) > 3 and pd.notna(row[3]) else "0"
+                    # Remove currency symbols and commas, then convert to float
+                    price_cleaned = price_str.replace('₹', '').replace(',', '').strip()
+                    try:
+                        player_price = float(price_cleaned) / 10000000  # Convert to crores
+                    except ValueError:
+                        player_price = 0.1  # Default price if parsing fails
                     
                     player_data = {
                         "name": player_name,
@@ -434,6 +492,7 @@ class Dream11TeamPredictor:
             role = "Batsman"
             
         return role
+
     def calculate_player_scores(self, team1, team2):
         """
         Calculate fantasy scores for all players in the two teams based on Dream11 scoring rules
@@ -626,7 +685,9 @@ class Dream11TeamPredictor:
             }
                 
         return player_scores
-    def predict_team(self, team1, team2, budget=100, team_size=11):
+
+    @cached_result(expires_after=300)  # Cache team predictions for 5 minutes
+    def predict_team(self, team1, team2, budget=100, team_size=11, advanced_selection=True):
         """
         Predict the best Dream11 team for a match between team1 and team2
         
@@ -635,6 +696,7 @@ class Dream11TeamPredictor:
             team2: Second team name
             budget: Total budget for creating the team (in crores)
             team_size: Number of players in the team
+            advanced_selection: Use advanced selection algorithm (knapsack-like)
             
         Returns:
             dict: Selected team and metadata
@@ -651,7 +713,136 @@ class Dream11TeamPredictor:
             
         # Calculate scores for all players
         player_scores = self.calculate_player_scores(team1, team2)
-          # Sort players by score
+          
+        if advanced_selection:
+            # Use advanced selection algorithm (knapsack-like approach)
+            selected_team = self._select_team_advanced(
+                player_scores=player_scores,
+                team1=team1,
+                team2=team2,
+                budget=budget,
+                team_size=team_size
+            )
+        else:
+            # Use simple greedy algorithm for team selection
+            selected_team = self._select_team_greedy(
+                player_scores=player_scores,
+                team1=team1,
+                team2=team2,
+                budget=budget,
+                team_size=team_size
+            )
+        
+        # If no team could be selected, return empty result
+        if not selected_team:
+            return {
+                "team": [],
+                "score": 0,
+                "budget_used": 0,
+                "budget_remaining": budget,
+                "roles": {"Batsman": 0, "Bowler": 0, "All-Rounder": 0, "Wicket-Keeper": 0},
+                "team_distribution": {team1: 0, team2: 0},
+                "captain": None,
+                "vice_captain": None
+            }
+        
+        # Calculate team composition statistics
+        team_roles = {"Batsman": 0, "Bowler": 0, "All-Rounder": 0, "Wicket-Keeper": 0}
+        team_counts = {team1: 0, team2: 0}
+        spent_budget = 0
+        
+        for player in selected_team:
+            team_roles[player["role"]] += 1
+            team_counts[player["team"]] += 1
+            spent_budget += player["price"]
+        
+        # Select captain and vice-captain (highest scoring players)
+        if selected_team:
+            team_with_scores = [(p, player_scores[p["name"]]["fantasy_points"]) for p in selected_team]
+            team_with_scores.sort(key=lambda x: x[1], reverse=True)
+            
+            captain = team_with_scores[0][0] if len(team_with_scores) > 0 else None
+            vice_captain = team_with_scores[1][0] if len(team_with_scores) > 1 else None
+            
+            # Mark captain and vice-captain in the player dictionaries
+            if captain:
+                captain["is_captain"] = True
+                for p in selected_team:
+                    if p["name"] == captain["name"]:
+                        p["is_captain"] = True
+                    else:
+                        p["is_captain"] = False
+            
+            if vice_captain:
+                vice_captain["is_vice_captain"] = True
+                for p in selected_team:
+                    if p["name"] == vice_captain["name"]:
+                        p["is_vice_captain"] = True
+                    else:
+                        p["is_vice_captain"] = False
+            
+            # Calculate team score with captain (2x) and vice-captain (1.5x) multipliers
+            team_score = 0
+            for p in selected_team:
+                player_points = player_scores[p["name"]]["fantasy_points"]
+                
+                if p.get("is_captain", False):
+                    player_points *= 2.0  # Captain gets 2x points
+                elif p.get("is_vice_captain", False):
+                    player_points *= 1.5  # Vice-captain gets 1.5x points
+                
+                team_score += player_points
+        else:
+            team_score = 0
+            captain = None
+            vice_captain = None
+        
+        # Prepare detailed player stats for UI display
+        detailed_players = []
+        for p in selected_team:
+            player_stats = player_scores[p["name"]]
+            detailed_players.append({
+                "name": p["name"],
+                "role": p["role"],
+                "team": p["team"],
+                "price": p["price"],
+                "is_captain": p.get("is_captain", False),
+                "is_vice_captain": p.get("is_vice_captain", False),
+                "fantasy_points": player_stats["fantasy_points"],
+                "batting_points": player_stats["batting_points"],
+                "bowling_points": player_stats["bowling_points"],
+                "fielding_points": player_stats["fielding_points"],
+            })
+        
+        result = {
+            "team": selected_team,
+            "detailed_players": detailed_players,
+            "score": team_score,
+            "budget_used": spent_budget,
+            "budget_remaining": budget - spent_budget,
+            "roles": team_roles,
+            "team_distribution": team_counts,
+            "captain": captain["name"] if captain else None,
+            "vice_captain": vice_captain["name"] if vice_captain else None
+        }
+        
+        return result
+
+    def _select_team_greedy(self, player_scores, team1, team2, budget=100, team_size=11):
+        """
+        Select team using simple greedy algorithm
+        
+        Args:
+            player_scores: Dictionary of player scores
+            team1: First team name
+            team2: Second team name
+            budget: Total budget
+            team_size: Number of players in the team
+            
+        Returns:
+            list: Selected team
+        """
+        # Sort players by score
         sorted_players = sorted(
             player_scores.items(),
             key=lambda item: item[1]["fantasy_points"],
@@ -665,7 +856,7 @@ class Dream11TeamPredictor:
             "Batsman": 0,
             "Bowler": 0,
             "All-Rounder": 0,
-            "Wicket Keeper": 0
+            "Wicket-Keeper": 0
         }
         team_counts = {team1: 0, team2: 0}
         
@@ -679,11 +870,11 @@ class Dream11TeamPredictor:
         # Prioritize selecting at least one wicket keeper
         for name, data in sorted_players:
             player = data["player"]
-            if player["role"] == "Wicket Keeper" and team_roles["Wicket Keeper"] < min_wicket_keepers:
+            if player["role"] == "Wicket-Keeper" and team_roles["Wicket-Keeper"] < min_wicket_keepers:
                 if spent_budget + player["price"] <= budget:
                     selected_team.append(player)
                     spent_budget += player["price"]
-                    team_roles["Wicket Keeper"] += 1
+                    team_roles["Wicket-Keeper"] += 1
                     team_counts[player["team"]] += 1
                     
                     if len(selected_team) >= team_size:
@@ -705,7 +896,7 @@ class Dream11TeamPredictor:
             if spent_budget + player["price"] > budget:
                 continue
                 
-            # Check role constraints
+            # Check if we've reached team size
             if len(selected_team) >= team_size:
                 break
                 
@@ -714,25 +905,147 @@ class Dream11TeamPredictor:
             team_roles[player["role"]] += 1
             team_counts[player["team"]] += 1
         
-        # Check if team satisfies minimum role requirements
-        if (team_roles["Batsman"] < min_batsmen or
-            team_roles["Bowler"] < min_bowlers or
-            team_roles["All-Rounder"] < min_all_rounders or
-            team_roles["Wicket Keeper"] < min_wicket_keepers):
-            logging.warning("Could not satisfy minimum role requirements")
-              # Calculate team score
-        team_score = sum(player_scores[p["name"]]["fantasy_points"] for p in selected_team)
+        return selected_team
         
-        result = {
-            "team": selected_team,
-            "score": team_score,
-            "budget_used": spent_budget,
-            "budget_remaining": budget - spent_budget,
-            "roles": team_roles,
-            "team_distribution": team_counts
+    def _select_team_advanced(self, player_scores, team1, team2, budget=100, team_size=11):
+        """
+        Select team using an advanced knapsack-like algorithm that considers role constraints
+        
+        Args:
+            player_scores: Dictionary of player scores
+            team1: First team name
+            team2: Second team name
+            budget: Total budget
+            team_size: Number of players in the team
+            
+        Returns:
+            list: Selected team
+        """
+        # Team constraints
+        max_players_per_team = 7
+        min_batsmen = 3
+        max_batsmen = 5
+        min_bowlers = 3
+        max_bowlers = 5
+        min_all_rounders = 1
+        max_all_rounders = 4
+        min_wicket_keepers = 1
+        max_wicket_keepers = 2
+        
+        # Get all available players from both teams
+        players_team1 = self.get_team_players(team1)
+        players_team2 = self.get_team_players(team2)
+        all_players = players_team1 + players_team2
+        
+        # Group players by role
+        players_by_role = {
+            "Batsman": [],
+            "Bowler": [],
+            "All-Rounder": [],
+            "Wicket-Keeper": []
         }
         
-        return result
+        for player in all_players:
+            role = player["role"]
+            name = player["name"]
+            if name in player_scores:
+                players_by_role[role].append({
+                    **player,
+                    "score": player_scores[name]["fantasy_points"],
+                    "value": player_scores[name]["fantasy_points"] / player["price"] if player["price"] > 0 else 0
+                })
+        
+        # Sort each role group by value (points per crore)
+        for role in players_by_role:
+            players_by_role[role].sort(key=lambda p: p["value"], reverse=True)
+        
+        # Generate multiple team combinations
+        best_team = None
+        best_team_score = 0
+        
+        # Try different combinations of role counts
+        role_combinations = []
+        
+        # Generate valid role combinations
+        for wk_count in range(min_wicket_keepers, max_wicket_keepers + 1):
+            for bat_count in range(min_batsmen, max_batsmen + 1):
+                for bowl_count in range(min_bowlers, max_bowlers + 1):
+                    for all_count in range(min_all_rounders, max_all_rounders + 1):
+                        total = wk_count + bat_count + bowl_count + all_count
+                        if total == team_size:
+                            role_combinations.append({
+                                "Wicket-Keeper": wk_count,
+                                "Batsman": bat_count,
+                                "Bowler": bowl_count,
+                                "All-Rounder": all_count
+                            })
+        
+        # Try each role combination
+        for role_combo in role_combinations:
+            # Select best players for each role based on the combo
+            selected_players = []
+            spent_budget = 0
+            team_counts = {team1: 0, team2: 0}
+            
+            # Track if we're able to meet constraints
+            is_valid = True
+            
+            # Select players for each role
+            for role, count in role_combo.items():
+                players = players_by_role[role]
+                selected_count = 0
+                
+                for player in players:
+                    # Skip if already selected somehow
+                    if any(p["name"] == player["name"] for p in selected_players):
+                        continue
+                    
+                    # Check team count constraint
+                    if team_counts.get(player["team"], 0) >= max_players_per_team:
+                        continue
+                    
+                    # Check budget
+                    if spent_budget + player["price"] > budget:
+                        continue
+                    
+                    # Add player to selection
+                    selected_players.append(player)
+                    spent_budget += player["price"]
+                    team_counts[player["team"]] += 1
+                    selected_count += 1
+                    
+                    # Stop if we've selected enough for this role
+                    if selected_count >= count:
+                        break
+                
+                # If we couldn't select enough players for this role, this combo is invalid
+                if selected_count < count:
+                    is_valid = False
+                    break
+            
+            # Verify team constraints are met
+            if is_valid and len(selected_players) == team_size:
+                # Calculate team score
+                team_score = sum(p["score"] for p in selected_players)
+                
+                # Update best team if this one is better
+                if team_score > best_team_score:
+                    best_team = selected_players
+                    best_team_score = team_score
+        
+        # If no valid team found, fall back to greedy approach
+        if best_team is None:
+            logging.warning("Advanced team selection failed to find a valid team. Falling back to greedy algorithm.")
+            return self._select_team_greedy(player_scores, team1, team2, budget, team_size)
+        
+        # Remove extra keys added for selection algorithm
+        for player in best_team:
+            if "score" in player:
+                del player["score"]
+            if "value" in player:
+                del player["value"]
+        
+        return best_team
 
 # Module-level functions for use in the Django application
 
@@ -826,8 +1139,7 @@ def predict_team(team1_name, team2_name, venue_name=None, budget=100, team_size=
     
     # Load data if needed
     if update_data:
-        predictor.update_player_data()
-        predictor.load_match_data()
+        update_player_data()
     
     # Predict team
     return predictor.predict_team(team1_name, team2_name, budget, team_size)
